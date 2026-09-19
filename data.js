@@ -21,12 +21,20 @@
 
   const UPGRADES = [
     { id: "sign", name: "Nowy szyld", blurb: "Bar wygląda dumniej.", cost: 18 },
-    { id: "stove", name: "Szybka kuchenka", blurb: "Dania schodzą szybciej.", cost: 24 },
+    { id: "stove", name: "Szybkie nogi", blurb: "Chodzisz szybciej po kuchni.", cost: 24 },
     { id: "line", name: "Większa kolejka", blurb: "Trzeci klient może czekać.", cost: 32 },
-    { id: "burner2", name: "Drugi palnik", blurb: "Gotujesz dwa dania naraz.", cost: 40 },
-    { id: "pierogi", name: "Przepis na pierogi", blurb: "Nowe danie, więcej monet.", cost: 28 },
+    { id: "burner2", name: "Szersza lada", blurb: "Na ladzie mieszczą się dwa dania.", cost: 40 },
+    { id: "pierogi", name: "Półka z pierogami", blurb: "Nowe danie, więcej monet.", cost: 28 },
     { id: "tips", name: "Słoik na napiwki", blurb: "Klienci płacą więcej.", cost: 45 },
   ];
+
+  const STATION_SPOTS = {
+    tea: { x: 16, y: 48 },
+    sandwich: { x: 16, y: 74 },
+    soup: { x: 84, y: 48 },
+    pancake: { x: 84, y: 74 },
+    pierogi: { x: 50, y: 86 },
+  };
 
   const NAMES = ["Ola", "Janek", "Basia", "Tomek", "Maja", "Kuba", "Zosia", "Bartek"];
 
@@ -60,16 +68,83 @@
     return RECIPES.filter((recipe) => isUnlocked(owned, recipe));
   }
 
-  function stoveCount(owned) {
-    return owned.burner2 ? 2 : 1;
-  }
-
   function lineLimit(owned) {
     return owned.line ? 3 : 2;
   }
 
-  function cookScale(owned) {
-    return owned.stove ? 0.72 : 1;
+  function walkSpeed(owned) {
+    return owned.stove ? 54 : 38;
+  }
+
+  function plateLimit(owned) {
+    return owned.burner2 ? 2 : 1;
+  }
+
+  function stationsFor(owned) {
+    return openRecipes(owned).map((recipe) => ({
+      recipeId: recipe.id,
+      name: recipe.name,
+      x: STATION_SPOTS[recipe.id].x,
+      y: STATION_SPOTS[recipe.id].y,
+    }));
+  }
+
+  function dist2(ax, ay, bx, by) {
+    const dx = ax - bx;
+    const dy = ay - by;
+    return dx * dx + dy * dy;
+  }
+
+  function nearSpot(x, y, spot, range) {
+    return dist2(x, y, spot.x, spot.y) <= range * range;
+  }
+
+  function closestStation(x, y, owned, range) {
+    return (
+      stationsFor(owned).find((spot) => nearSpot(x, y, spot, range)) || null
+    );
+  }
+
+  function atCounter(y) {
+    return y <= 34;
+  }
+
+  function tryPickup(x, y, held, owned) {
+    if (held) return { ok: false, reason: "full", held };
+    const spot = closestStation(x, y, owned, 13);
+    if (!spot) return { ok: false, reason: "far", held };
+    return { ok: true, reason: "", held: spot.recipeId, name: spot.name };
+  }
+
+  function tryPlace(y, held, plates, owned) {
+    if (!held) return { ok: false, reason: "empty", held, plates };
+    if (!atCounter(y)) return { ok: false, reason: "far", held, plates };
+    if (plates.length >= plateLimit(owned)) return { ok: false, reason: "full", held, plates };
+    return {
+      ok: true,
+      reason: "",
+      held: null,
+      plates: plates.concat([{ recipeId: held }]),
+    };
+  }
+
+  function autoTake(plates, customers, owned) {
+    for (let i = 0; i < customers.length; i += 1) {
+      const guest = customers[i];
+      const plateIndex = plates.findIndex((plate) => plate.recipeId === guest.recipeId);
+      if (plateIndex === -1) continue;
+      const recipe = recipeById(guest.recipeId);
+      const pay = payFor(recipe, owned, guest.patience / guest.maxPatience);
+      return {
+        ok: true,
+        pay,
+        name: guest.name,
+        dish: recipe.name,
+        plates: plates.filter((_, index) => index !== plateIndex),
+        customers: customers.filter((person) => person.id !== guest.id),
+      };
+    }
+    return { ok: false, plates, customers };
   }
 
   function payFor(recipe, owned, patienceRatio) {
@@ -102,56 +177,6 @@
     };
   }
 
-  function emptyStoves(owned) {
-    return Array.from({ length: stoveCount(owned) }, () => ({
-      recipeId: null,
-      left: 0,
-      ready: false,
-    }));
-  }
-
-  function startCook(stoves, owned, recipeId) {
-    const recipe = recipeById(recipeId);
-    if (!recipe || !isUnlocked(owned, recipe)) return { ok: false, reason: "locked", stoves };
-    const slot = stoves.find((stove) => !stove.recipeId);
-    if (!slot) return { ok: false, reason: "busy", stoves };
-    slot.recipeId = recipeId;
-    slot.left = recipe.cookMs * cookScale(owned);
-    slot.ready = false;
-    return { ok: true, reason: "", stoves };
-  }
-
-  function tickStoves(stoves, dtMs) {
-    stoves.forEach((stove) => {
-      if (!stove.recipeId || stove.ready) return;
-      stove.left -= dtMs;
-      if (stove.left <= 0) {
-        stove.left = 0;
-        stove.ready = true;
-      }
-    });
-    return stoves;
-  }
-
-  function serveCustomer(stoves, customers, owned, customerId) {
-    const customer = customers.find((person) => person.id === customerId);
-    if (!customer) return { ok: false, reason: "gone" };
-    const stove = stoves.find((slot) => slot.ready && slot.recipeId === customer.recipeId);
-    if (!stove) return { ok: false, reason: "not-ready" };
-    const recipe = recipeById(customer.recipeId);
-    const pay = payFor(recipe, owned, customer.patience / customer.maxPatience);
-    stove.recipeId = null;
-    stove.left = 0;
-    stove.ready = false;
-    return {
-      ok: true,
-      reason: "",
-      pay,
-      customers: customers.filter((person) => person.id !== customerId),
-      stoves,
-    };
-  }
-
   return {
     SKINS,
     HAIR_COLORS,
@@ -161,20 +186,24 @@
     RECIPES,
     UPGRADES,
     NAMES,
+    STATION_SPOTS,
     freshSave,
     recipeById,
     upgradeById,
     isUnlocked,
     openRecipes,
-    stoveCount,
     lineLimit,
-    cookScale,
+    walkSpeed,
+    plateLimit,
+    stationsFor,
+    nearSpot,
+    closestStation,
+    atCounter,
+    tryPickup,
+    tryPlace,
+    autoTake,
     payFor,
     canBuy,
     buyUpgrade,
-    emptyStoves,
-    startCook,
-    tickStoves,
-    serveCustomer,
   };
 });

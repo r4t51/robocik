@@ -9,7 +9,7 @@
     <title>Bar Mniam</title>
     <meta
       name="description"
-      content="Wybierz fryzurę, gotuj dla klientów i ulepszaj swój bar za zarobione monety."
+      content="Wybierz wygląd, chodź po kuchni, noś jedzenie na ladę. Klient sam je bierze."
     />
     <meta name="theme-color" content="#14352f" />
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
@@ -34,6 +34,17 @@
 
         <section id="stage" class="stage" aria-live="polite"></section>
         <p id="toast" class="toast" hidden></p>
+        <section id="deck" class="deck" hidden>
+          <div
+            id="stick"
+            class="stick"
+            role="application"
+            aria-label="Chodzenie. Na komputerze strzałki albo WASD."
+          >
+            <span id="stick-knob" class="knob"></span>
+          </div>
+          <button id="act-btn" type="button">Weź</button>
+        </section>
       </main>
     </div>
     <script src="data.js"></script>

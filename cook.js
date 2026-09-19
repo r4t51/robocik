@@ -4,19 +4,29 @@ const toastEl = document.getElementById("toast");
 const moneyEl = document.getElementById("money");
 const walletEl = document.getElementById("wallet");
 const signEl = document.getElementById("sign");
+const deck = document.getElementById("deck");
+const stickBase = document.getElementById("stick");
+const stickKnob = document.getElementById("stick-knob");
+const actBtn = document.getElementById("act-btn");
 
 const SAVE_KEY = "bar-mniam-save";
 
 const game = {
   mode: "create",
   save: D.freshSave(),
-  stoves: D.emptyStoves({}),
+  player: { x: 50, y: 58 },
+  held: null,
+  plates: [],
   customers: [],
-  spawnIn: 900,
+  spawnIn: 700,
   nextId: 1,
   toastUntil: 0,
   last: 0,
+  placedOnce: false,
 };
+
+const keys = new Set();
+const pointerMove = { x: 0, y: 0, active: false };
 
 function loadSave() {
   try {
@@ -37,7 +47,7 @@ function persist() {
   localStorage.setItem(SAVE_KEY, JSON.stringify(game.save));
 }
 
-function showToast(text, ms = 1100) {
+function showToast(text, ms = 1200) {
   toastEl.textContent = text;
   toastEl.hidden = false;
   game.toastUntil = performance.now() + ms;
@@ -127,19 +137,35 @@ function spawnCustomer() {
     name: D.NAMES[game.nextId % D.NAMES.length],
     recipeId: recipe.id,
     look: randomGuestLook(),
-    patience: 16000,
-    maxPatience: 16000,
+    patience: 18000,
+    maxPatience: 18000,
   });
   game.nextId += 1;
 }
 
+function moveVector() {
+  let x = pointerMove.active ? pointerMove.x : 0;
+  let y = pointerMove.active ? pointerMove.y : 0;
+  if (keys.has("arrowleft") || keys.has("a")) x -= 1;
+  if (keys.has("arrowright") || keys.has("d")) x += 1;
+  if (keys.has("arrowup") || keys.has("w")) y -= 1;
+  if (keys.has("arrowdown") || keys.has("s")) y += 1;
+  const mag = Math.hypot(x, y);
+  if (mag > 1) {
+    x /= mag;
+    y /= mag;
+  }
+  return { x, y, mag };
+}
+
 function createScreen() {
   game.mode = "create";
+  deck.hidden = true;
   const look = game.save.look;
   stage.innerHTML = `
     <div class="sheet create">
       <h1>Kim jesteś?</h1>
-      <p class="lead">Wybierz fryzurę i ciuchy. Potem stawiasz się za ladą.</p>
+      <p class="lead">Fryzura i ciuchy są twoje. Potem chodzisz, bierzesz jedzenie i nosisz je do lady.</p>
       <div class="mirror">${personSvg(look, { size: 150 })}</div>
       <div class="picks">
         <div class="pick-row" data-key="hair">
@@ -166,73 +192,93 @@ function createScreen() {
 
 function playScreen() {
   game.mode = "play";
-  const menu = D.openRecipes(game.save.owned);
-  const matching = new Set(
-    game.customers
-      .filter((guest) => game.stoves.some((stove) => stove.ready && stove.recipeId === guest.recipeId))
-      .map((guest) => guest.id),
-  );
-
+  deck.hidden = false;
+  const stations = D.stationsFor(game.save.owned);
   stage.innerHTML = `
     <div class="sheet play">
-      <div class="queue">
-        ${
-          game.customers.length
-            ? game.customers
-                .map((guest) => {
-                  const recipe = D.recipeById(guest.recipeId);
-                  const wait = Math.max(0, guest.patience / guest.maxPatience);
-                  return `<button type="button" class="guest ${matching.has(guest.id) ? "is-ready" : ""}" data-act="serve" data-id="${guest.id}">
-                    ${personSvg(guest.look, { size: 78, flip: true })}
-                    <span class="guest-name">${guest.name}</span>
-                    <span class="order">${dishSvg(recipe.id)}<b>${recipe.name}</b></span>
-                    <span class="wait"><i style="width:${Math.round(wait * 100)}%"></i></span>
-                  </button>`;
-                })
-                .join("")
-            : `<p class="empty">Ulica jest cicha. Zaraz ktoś przyjdzie.</p>`
-        }
-      </div>
-      <div class="counter">
-        <div class="cook">${personSvg(game.save.look, { size: 110 })}</div>
-        <div class="hobs">
-          ${game.stoves
-            .map((stove, index) => {
-              if (!stove.recipeId) return `<div class="hob is-empty">Pusto</div>`;
-              const recipe = D.recipeById(stove.recipeId);
-              const total = recipe.cookMs * D.cookScale(game.save.owned);
-              const done = stove.ready ? 1 : 1 - stove.left / total;
-              return `<div class="hob ${stove.ready ? "is-hot" : ""}">
-                ${dishSvg(recipe.id)}
-                <b>${stove.ready ? "Gotowe" : recipe.name}</b>
-                <span class="wait"><i style="width:${Math.round(done * 100)}%"></i></span>
-              </div>`;
-            })
-            .join("")}
-        </div>
-      </div>
-      <div class="dock">
-        ${menu
+      <p class="how">Podejdź do jedzenia, weź je, zanieś do lady. Klient sam bierze.</p>
+      <div class="room" id="room">
+        <div class="queue" id="queue"></div>
+        <div class="counter-top" id="plates"></div>
+        ${stations
           .map(
-            (recipe) => `<button type="button" class="dish" data-act="cook" data-id="${recipe.id}">
-              ${dishSvg(recipe.id)}
-              <span>${recipe.name}</span>
-            </button>`,
+            (spot) => `<div class="shelf" data-shelf="${spot.recipeId}" style="left:${spot.x}%;top:${spot.y}%">
+              ${dishSvg(spot.recipeId)}
+              <span>${spot.name}</span>
+            </div>`,
           )
           .join("")}
-        <button type="button" class="dish is-shop" data-act="upgrades">Ulepsz bar</button>
+        <div class="you" id="you">${personSvg(game.save.look, { size: 72 })}<span id="carry" class="carry" hidden></span></div>
       </div>
+      <button type="button" class="go slim" data-act="upgrades">Ulepsz bar</button>
     </div>
   `;
+  paintRoom();
+}
+
+function paintRoom() {
+  const you = document.getElementById("you");
+  const carry = document.getElementById("carry");
+  const queue = document.getElementById("queue");
+  const plates = document.getElementById("plates");
+  if (!you || !queue || !plates) return;
+
+  you.style.left = `${game.player.x}%`;
+  you.style.top = `${game.player.y}%`;
+
+  const near = D.closestStation(game.player.x, game.player.y, game.save.owned, 13);
+  document.querySelectorAll(".shelf").forEach((node) => {
+    node.classList.toggle("is-near", Boolean(near) && near.recipeId === node.dataset.shelf);
+  });
+  document.querySelector(".counter-top")?.classList.toggle("is-near", D.atCounter(game.player.y));
+
+  if (game.held) {
+    carry.hidden = false;
+    carry.innerHTML = `${dishSvg(game.held)}`;
+  } else {
+    carry.hidden = true;
+    carry.innerHTML = "";
+  }
+
+  const wanted = new Set(game.plates.map((plate) => plate.recipeId));
+  queue.innerHTML = game.customers.length
+    ? game.customers
+        .map((guest) => {
+          const recipe = D.recipeById(guest.recipeId);
+          const wait = Math.max(0, guest.patience / guest.maxPatience);
+          return `<div class="guest ${wanted.has(guest.recipeId) ? "is-ready" : ""}">
+            ${personSvg(guest.look, { size: 62, flip: true })}
+            <span class="guest-name">${guest.name}</span>
+            <span class="order">${dishSvg(recipe.id)}<b>${recipe.name}</b></span>
+            <span class="wait"><i style="width:${Math.round(wait * 100)}%"></i></span>
+          </div>`;
+        })
+        .join("")
+    : `<p class="empty">Zaraz ktoś przyjdzie.</p>`;
+
+  plates.innerHTML = game.plates.length
+    ? game.plates
+        .map((plate) => `<div class="plate">${dishSvg(plate.recipeId)}<span>${D.recipeById(plate.recipeId).name}</span></div>`)
+        .join("")
+    : `<p class="empty">Lada pusta</p>`;
+
+  if (game.held) {
+    actBtn.textContent = D.recipeById(game.held).name;
+  } else if (near) {
+    actBtn.textContent = `Weź ${near.name}`;
+  } else {
+    actBtn.textContent = "Weź";
+  }
 }
 
 function upgradeScreen() {
   toastEl.hidden = true;
   game.mode = "upgrade";
+  deck.hidden = true;
   stage.innerHTML = `
     <div class="sheet shop">
       <h1>Ulepszenia</h1>
-      <p class="lead">Masz ${game.save.money} monet. Kup coś do baru, potem wróć za ladę.</p>
+      <p class="lead">Masz ${game.save.money} monet. Kup coś do baru, potem wróć i noś dalej.</p>
       <div class="wares">
         ${D.UPGRADES.map((item) => {
           const check = D.canBuy(game.save, item.id);
@@ -248,48 +294,50 @@ function upgradeScreen() {
           </div>`;
         }).join("")}
       </div>
-      <button type="button" class="go" data-act="back-bar">Za ladę</button>
+      <button type="button" class="go" data-act="back-bar">Wracam</button>
     </div>
   `;
 }
 
-function render() {
-  renderMoney();
-  if (game.mode === "create") createScreen();
-  else if (game.mode === "upgrade") upgradeScreen();
-  else playScreen();
-}
-
 function openBar() {
-  game.stoves = D.emptyStoves(game.save.owned);
+  game.player = { x: 50, y: 58 };
+  game.held = null;
+  game.plates = [];
   game.customers = [];
-  game.spawnIn = 400;
+  game.spawnIn = 500;
+  game.placedOnce = false;
   persist();
   playScreen();
-  showToast("Klienci idą. Gotuj to, o co proszą.");
+  showToast("Podejdź, weź, zanieś do lady.");
 }
 
-function cookDish(id) {
-  const result = D.startCook(game.stoves, game.save.owned, id);
+function doPickup() {
+  const result = D.tryPickup(game.player.x, game.player.y, game.held, game.save.owned);
   if (!result.ok) {
-    showToast(result.reason === "busy" ? "Palnik zajęty" : "Najpierw kup przepis");
-    return;
+    if (result.reason === "full") showToast("Najpierw zanieś to na ladę");
+    else showToast("Podejdź bliżej półki");
+    return false;
   }
-  playScreen();
+  game.held = result.held;
+  showToast(`Bierzesz: ${result.name}`);
+  return true;
 }
 
-function tryServe(id) {
-  const before = game.customers.find((guest) => guest.id === Number(id));
-  const result = D.serveCustomer(game.stoves, game.customers, game.save.owned, Number(id));
-  if (!result.ok) {
-    showToast(before ? `Jeszcze nie ma: ${D.recipeById(before.recipeId).name}` : "Już wyszli");
-    return;
-  }
-  game.customers = result.customers;
-  game.save.money += result.pay;
-  persist();
-  playScreen();
-  showToast(`+${result.pay} monet`);
+function doPlace() {
+  const result = D.tryPlace(game.player.y, game.held, game.plates, game.save.owned);
+  if (!result.ok) return false;
+  game.held = result.held;
+  game.plates = result.plates;
+  showToast("Samo się kładzie na ladzie");
+  return true;
+}
+
+function doAction() {
+  if (game.mode !== "play") return;
+  if (!game.held) doPickup();
+  else if (D.atCounter(game.player.y)) doPlace();
+  else showToast("Zanieś to do lady na górze");
+  paintRoom();
 }
 
 function buyItem(id) {
@@ -299,7 +347,6 @@ function buyItem(id) {
     return;
   }
   game.save = result.save;
-  if (id === "burner2") game.stoves = D.emptyStoves(game.save.owned);
   persist();
   upgradeScreen();
   showToast("Kupione");
@@ -307,7 +354,36 @@ function buyItem(id) {
 
 function step(dt) {
   if (game.mode !== "play") return;
-  D.tickStoves(game.stoves, dt);
+  const move = moveVector();
+  if (move.mag > 0.12) {
+    const speed = D.walkSpeed(game.save.owned) * (dt / 1000);
+    game.player.x = Math.max(12, Math.min(88, game.player.x + move.x * speed));
+    game.player.y = Math.max(28, Math.min(88, game.player.y + move.y * speed));
+  }
+
+  if (!game.held && D.closestStation(game.player.x, game.player.y, game.save.owned, 11)) {
+    const grabbed = D.tryPickup(game.player.x, game.player.y, game.held, game.save.owned);
+    if (grabbed.ok) {
+      game.held = grabbed.held;
+      showToast(`Bierzesz: ${grabbed.name}`);
+    }
+  }
+
+  if (game.held && D.atCounter(game.player.y) && !game.placedOnce) {
+    if (doPlace()) game.placedOnce = true;
+  }
+  if (!D.atCounter(game.player.y)) game.placedOnce = false;
+
+  const taken = D.autoTake(game.plates, game.customers, game.save.owned);
+  if (taken.ok) {
+    game.plates = taken.plates;
+    game.customers = taken.customers;
+    game.save.money += taken.pay;
+    persist();
+    renderMoney();
+    showToast(`${taken.name} bierze ${taken.dish}. +${taken.pay}`);
+  }
+
   game.customers.forEach((guest) => {
     guest.patience -= dt;
   });
@@ -316,30 +392,52 @@ function step(dt) {
     game.customers = game.customers.filter((guest) => guest.patience > 0);
     showToast(`${leaving[0].name} wyszedł. Za długo.`);
   }
+
   game.spawnIn -= dt;
   if (game.customers.length < D.lineLimit(game.save.owned) && game.spawnIn <= 0) {
     spawnCustomer();
-    game.spawnIn = 4200 + Math.random() * 2200;
+    game.spawnIn = 3800 + Math.random() * 2400;
   }
+
+  paintRoom();
 }
 
-let dirty = false;
 function frame(now) {
   const dt = Math.min(40, now - (game.last || now));
   game.last = now;
-  const readyBefore = game.stoves.filter((stove) => stove.ready).length;
-  const guestHash = `${game.customers.length}:${game.customers.map((guest) => Math.round(guest.patience / 800)).join(",")}`;
   step(dt);
   if (toastEl.hidden === false && now > game.toastUntil) toastEl.hidden = true;
-  if (game.mode === "play") {
-    const readyAfter = game.stoves.filter((stove) => stove.ready).length;
-    const guestHash2 = `${game.customers.length}:${game.customers.map((guest) => Math.round(guest.patience / 800)).join(",")}`;
-    if (readyAfter !== readyBefore || guestHash2 !== guestHash || dirty) {
-      playScreen();
-      dirty = false;
-    }
-  }
   requestAnimationFrame(frame);
+}
+
+function bindStick(el) {
+  const update = (event) => {
+    const rect = el.getBoundingClientRect();
+    const x = event.clientX - (rect.left + rect.width / 2);
+    const y = event.clientY - (rect.top + rect.height / 2);
+    const max = rect.width * 0.32;
+    const mag = Math.hypot(x, y);
+    const clamped = mag > max ? max / mag : 1;
+    pointerMove.x = (x * clamped) / max;
+    pointerMove.y = (y * clamped) / max;
+    pointerMove.active = true;
+    stickKnob.style.transform = `translate(calc(-50% + ${x * clamped}px), calc(-50% + ${y * clamped}px))`;
+  };
+  const end = () => {
+    pointerMove.x = 0;
+    pointerMove.y = 0;
+    pointerMove.active = false;
+    stickKnob.style.transform = "translate(-50%, -50%)";
+  };
+  el.addEventListener("pointerdown", (event) => {
+    el.setPointerCapture(event.pointerId);
+    update(event);
+  });
+  el.addEventListener("pointermove", (event) => {
+    if (el.hasPointerCapture(event.pointerId)) update(event);
+  });
+  el.addEventListener("pointerup", end);
+  el.addEventListener("pointercancel", end);
 }
 
 stage.addEventListener("click", (event) => {
@@ -347,14 +445,6 @@ stage.addEventListener("click", (event) => {
   if (!btn) return;
   if (btn.dataset.act === "open-bar") {
     openBar();
-    return;
-  }
-  if (btn.dataset.act === "cook") {
-    cookDish(btn.dataset.id);
-    return;
-  }
-  if (btn.dataset.act === "serve") {
-    tryServe(btn.dataset.id);
     return;
   }
   if (btn.dataset.act === "upgrades") {
@@ -377,6 +467,28 @@ stage.addEventListener("click", (event) => {
   }
 });
 
+actBtn.addEventListener("pointerdown", (event) => {
+  event.preventDefault();
+  doAction();
+});
+
+window.addEventListener("keydown", (event) => {
+  const key = event.key.toLowerCase();
+  if (["arrowup", "arrowdown", "arrowleft", "arrowright", " "].includes(key)) {
+    event.preventDefault();
+  }
+  keys.add(key);
+  if (key === " " || key === "e") doAction();
+  if ((key === "enter" || key === " ") && (game.mode === "title" || game.mode === "create")) {
+    if (game.mode === "create" && key === "enter") openBar();
+  }
+});
+
+window.addEventListener("keyup", (event) => {
+  keys.delete(event.key.toLowerCase());
+});
+
+bindStick(stickBase);
 game.save = loadSave();
 if (new URLSearchParams(location.search).has("play")) {
   openBar();

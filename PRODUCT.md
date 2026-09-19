@@ -29,7 +29,7 @@ Open the page, set a look, tap Do baru, cook, serve, upgrade. Progress sits in l
 ## Capabilities and Constraints
 
 - Character creator: hairstyle, hair color, skin, shirt, glasses or scarf.
-- Customers arrive with an order. Cook that dish, then tap the customer.
+- Customers arrive with an order. Walk to a shelf, pick the dish up, carry it to the counter. It places itself. The matching customer takes it.
 - Money from sales. A shop screen sells faster stove, second burner, longer queue, pierogi recipe, tips, and a louder sign.
 - Polish copy.
 - The old maze remains at `labirynt/`.
