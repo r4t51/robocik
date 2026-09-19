@@ -1,64 +1,59 @@
 ---
-name: Pizza u Kotka
-description: A cafeteria pizza room where a kitten serves mushroom pizza and never buses tables.
+name: Moja Planeta
+description: A pocket planet you walk, decorate, and host, with a house of your own.
 colors:
-  lino: "#e8c14a"
-  cinder: "#6f96ab"
-  tray: "#f0c9b0"
-  ketchup: "#c4281c"
-  milk: "#fff4dc"
-  mushroom: "#6b4a2a"
-  ink: "#2a1a12"
-  sauce: "#b42318"
+  space: "#1a1840"
+  moss: "#4f8a4a"
+  lichen: "#8fbf6a"
+  clay: "#c45a3a"
+  star: "#f4e7b0"
+  paper: "#f7f1de"
 typography:
   display:
-    fontFamily: "Archivo Black, Trebuchet MS, sans-serif"
-    fontSize: "clamp(1.6rem, 7vw, 2.4rem)"
-    fontWeight: 400
+    fontFamily: "Grandstander, Trebuchet MS, sans-serif"
+    fontSize: "clamp(1.55rem, 7vw, 2.3rem)"
+    fontWeight: 800
     lineHeight: 0.95
-    letterSpacing: "-0.02em"
   body:
-    fontFamily: "Sora, Avenir Next, sans-serif"
+    fontFamily: "Lexend, Avenir Next, sans-serif"
     fontSize: "1rem"
     fontWeight: 400
-    lineHeight: 1.35
+    lineHeight: 1.4
 ---
 
-# Design System: Pizza u Kotka
+# Design System: Moja Planeta
 
 ## Overview
 
-**Creative North Star: "The Unbused Tray"**
+**Creative North Star: "The Pocket Globe"**
 
-The game is a school cafeteria at pizza lunch. Linoleum is the floor. Cinderblock is the wall. Peach laminate is every table. Ketchup is every action. The kitten is the only living warm thing that moves. Dirty trays stay.
+The game is a small planet sitting in night space. Moss is the ground. Clay is the house and every action. Starlight is the nice score. People only arrive after you plant the world.
 
 ## Colors
 
-- Linoleum yellow owns the page
-- Cinder blue owns the wall and the oven hatch
-- Ketchup is take, buy, and go
-- Mushroom brown is pizza dots and the walk stick
-- Milk is the ticket sheet
+- Space indigo owns the night around the globe
+- Moss and lichen own the outdoor grass
+- Clay is go, place, and the cottage
+- Star cream is coins of niceness
 
 ## Typography
 
-Archivo Black on the stamp sign, titles, and fat buttons. Sora on rules and upgrade blurbs. It keeps Polish letters.
+Grandstander on the sign, titles, and fat buttons. Lexend on rules and the name field.
 
 ## Layout
 
-One column on a phone: stamp and wallet, then either the cat creator, the walking room, or the upgrade list. The room is stacked planes: wall, floor, hatch, tables.
+One column on a phone: sign and nice score, then the creator or the walking globe. Item chips sit above the stick.
 
 ## Do's and Don'ts
 
 ### Do
 
-- Draw the cat, pizza, guests, and trash as shapes, not emoji
-- Make a nearby oven or table obvious with a ketchup outline
-- Leave dirty plates on the table after every sale
-- Keep the old maze a quiet text link, not a second hero
+- Draw people, plants, and the house as shapes, not emoji
+- Make a nearby plot or door obvious with a clay outline
+- Keep Pizza u Kotka and Robocik as quiet text links
 
 ### Don't
 
-- Don't turn this into a cream cat café
-- Don't bring back the night-teal Bar Mniam hatch
-- Don't add a trash-cleanup job
+- Don't copy Animal Crossing art, names, or the leaf
+- Don't start the player as a cat
+- Don't send visitors to a bare planet

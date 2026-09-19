@@ -1,62 +1,85 @@
 (function (root, factory) {
   const api = factory();
-  root.BarData = api;
+  root.PlanetData = api;
   if (typeof module === "object" && module.exports) {
     module.exports = api;
   }
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
-  const FURS = ["#d9b48a", "#f4d35e", "#c45a24", "#6b5344", "#2a2118"];
-  const MARKS = ["gładki", "łaty", "paski"];
-  const EXTRAS = ["nic", "kokarda", "dzwonek"];
+  const HAIRS = ["proste", "grzywka", "warkocz", "kucyk"];
+  const HAIR_COLORS = ["#2a1a12", "#6b3f2a", "#c45a24", "#f4d35e", "#7a2e1b"];
+  const SKINS = ["#f3c7a6", "#e0a07a", "#b56a43"];
+  const SHIRTS = ["#3d6b4f", "#c45a3a", "#2d4a7c", "#d4a017"];
 
-  const PIZZA = { id: "pizza", name: "Pizza z grzybami", pay: 8 };
-  const OVEN = { x: 50, y: 86, recipeId: "pizza", name: "Pizza z grzybami" };
-
-  const TABLE_SPOTS = [
-    { id: 0, x: 24, y: 38 },
-    { id: 1, x: 70, y: 38 },
-    { id: 2, x: 48, y: 60 },
-    { id: 3, x: 26, y: 74 },
+  const OUT_ITEMS = [
+    { id: "flower", name: "Kwiat", nice: 2 },
+    { id: "tree", name: "Drzewko", nice: 3 },
+    { id: "lamp", name: "Latarnia", nice: 2 },
+    { id: "rock", name: "Kamień", nice: 1 },
   ];
 
-  const UPGRADES = [
-    { id: "sign", name: "Nowy szyld", blurb: "Pizzeria kota wygląda dumniej.", cost: 16 },
-    { id: "stove", name: "Szybkie łapki", blurb: "Kotek biega szybciej.", cost: 22 },
-    { id: "line", name: "Czwarty stolik", blurb: "Jeszcze jeden stół na sali.", cost: 30 },
-    { id: "tips", name: "Większe kawałki", blurb: "Klienci płacą więcej za pizzę.", cost: 36 },
+  const IN_ITEMS = [
+    { id: "rug", name: "Dywan", nice: 2 },
+    { id: "pot", name: "Doniczka", nice: 2 },
   ];
 
-  const NAMES = ["Ola", "Janek", "Basia", "Tomek", "Maja", "Kuba", "Zosia", "Bartek"];
+  const OUT_SPOTS = [
+    { id: "o0", x: 22, y: 38 },
+    { id: "o1", x: 40, y: 52 },
+    { id: "o2", x: 58, y: 36 },
+    { id: "o3", x: 28, y: 70 },
+    { id: "o4", x: 52, y: 72 },
+    { id: "o5", x: 70, y: 64 },
+  ];
+
+  const IN_SPOTS = [
+    { id: "i0", x: 28, y: 58 },
+    { id: "i1", x: 50, y: 46 },
+    { id: "i2", x: 72, y: 60 },
+  ];
+
+  const HOUSE_DOOR = { x: 80, y: 40 };
+  const HOUSE_EXIT = { x: 50, y: 86 };
+
+  const VISITORS = [
+    { name: "Ania", line: "U ciebie jest tak ładnie." },
+    { name: "Kuba", line: "Ta planeta jest cała twoja? Super." },
+    { name: "Maja", line: "Lubię twój domek." },
+    { name: "Tomek", line: "Przyleciałem, bo tu jest miło." },
+  ];
 
   function freshSave() {
     return {
-      look: { fur: 0, mark: 1, extra: 1 },
-      money: 0,
-      owned: {},
+      name: "",
+      look: { hair: 0, hairColor: 1, skin: 0, shirt: 0 },
+      placed: {},
+      room: "out",
     };
   }
 
-  function upgradeById(id) {
-    return UPGRADES.find((item) => item.id === id) || null;
+  function itemById(id) {
+    return OUT_ITEMS.concat(IN_ITEMS).find((item) => item.id === id) || null;
   }
 
-  function tableCount(owned) {
-    return owned.line ? 4 : 3;
+  function spotsFor(room) {
+    return room === "in" ? IN_SPOTS : OUT_SPOTS;
   }
 
-  function walkSpeed(owned) {
-    return owned.stove ? 56 : 40;
+  function itemsFor(room) {
+    return room === "in" ? IN_ITEMS : OUT_ITEMS;
   }
 
-  function emptyTables(owned) {
-    return TABLE_SPOTS.slice(0, tableCount(owned)).map((spot) => ({
-      id: spot.id,
-      x: spot.x,
-      y: spot.y,
-      guest: null,
-      pizza: false,
-      trash: false,
-    }));
+  function niceScore(placed) {
+    return Object.values(placed).reduce((sum, id) => {
+      const item = itemById(id);
+      return sum + (item ? item.nice : 0);
+    }, 0);
+  }
+
+  function visitorCount(nice) {
+    if (nice >= 12) return 3;
+    if (nice >= 8) return 2;
+    if (nice >= 4) return 1;
+    return 0;
   }
 
   function dist2(ax, ay, bx, by) {
@@ -69,105 +92,70 @@
     return dist2(x, y, spot.x, spot.y) <= range * range;
   }
 
-  function atOven(x, y) {
-    return nearSpot(x, y, OVEN, 14);
+  function closestSpot(x, y, spots, range) {
+    return spots.find((spot) => nearSpot(x, y, spot, range)) || null;
   }
 
-  function closestTable(x, y, tables, range) {
-    return tables.find((table) => nearSpot(x, y, table, range)) || null;
+  function atDoor(x, y, room) {
+    return room === "in" ? nearSpot(x, y, HOUSE_EXIT, 14) : nearSpot(x, y, HOUSE_DOOR, 14);
   }
 
-  function tryPickup(x, y, held) {
-    if (held) return { ok: false, reason: "full", held };
-    if (!atOven(x, y)) return { ok: false, reason: "far", held };
-    return { ok: true, reason: "", held: "pizza", name: PIZZA.name };
-  }
-
-  function tryPlaceOnTable(x, y, held, tables) {
-    if (held !== "pizza") return { ok: false, reason: "empty", tables };
-    const table = closestTable(x, y, tables, 14);
-    if (!table) return { ok: false, reason: "far", tables };
-    if (!table.guest) return { ok: false, reason: "empty-table", tables };
-    if (table.pizza) return { ok: false, reason: "has-pizza", tables };
-    table.pizza = true;
-    return { ok: true, reason: "", held: null, tables, tableId: table.id };
-  }
-
-  function payFor(owned, patienceRatio) {
-    const tip = owned.tips ? 1.3 : 1;
-    const hurry = 0.8 + 0.3 * Math.max(0, Math.min(1, patienceRatio));
-    return Math.max(2, Math.round(PIZZA.pay * tip * hurry));
-  }
-
-  function eatAtReadyTables(tables, owned) {
-    const ready = tables.find((table) => table.guest && table.pizza);
-    if (!ready) return { ok: false, tables };
-    const guest = ready.guest;
-    const pay = payFor(owned, guest.patience / guest.maxPatience);
-    ready.pizza = false;
-    ready.trash = true;
-    ready.guest = null;
-    return { ok: true, pay, name: guest.name, tables };
-  }
-
-  function tryTakeTrash() {
-    return { ok: false, reason: "no-trash-job" };
-  }
-
-  function seatGuest(tables, guest) {
-    const free = tables.find((table) => !table.guest);
-    if (!free) return { ok: false, tables };
-    free.guest = guest;
-    return { ok: true, tables, tableId: free.id };
-  }
-
-  function canBuy(save, id) {
-    const item = upgradeById(id);
-    if (!item) return { ok: false, reason: "missing" };
-    if (save.owned[id]) return { ok: false, reason: "owned" };
-    if (save.money < item.cost) return { ok: false, reason: "poor" };
-    return { ok: true, reason: "" };
-  }
-
-  function buyUpgrade(save, id) {
-    const item = upgradeById(id);
-    const check = canBuy(save, id);
-    if (!item || !check.ok) return { ok: false, reason: check.reason, save };
+  function tryPlace(x, y, room, held, placed) {
+    if (!held) return { ok: false, reason: "empty", placed };
+    const item = itemById(held);
+    if (!item) return { ok: false, reason: "missing", placed };
+    const indoor = IN_ITEMS.some((entry) => entry.id === held);
+    if (indoor !== (room === "in")) return { ok: false, reason: "wrong-room", placed };
+    const spot = closestSpot(x, y, spotsFor(room), 13);
+    if (!spot) return { ok: false, reason: "far", placed };
+    if (placed[spot.id]) return { ok: false, reason: "taken", placed };
     return {
       ok: true,
       reason: "",
-      save: {
-        ...save,
-        money: save.money - item.cost,
-        owned: { ...save.owned, [id]: true },
-        look: { ...save.look },
-      },
+      placed: { ...placed, [spot.id]: held },
+      spotId: spot.id,
     };
   }
 
+  function tryEnter(x, y, room) {
+    if (room !== "out") return { ok: false, reason: "inside", room };
+    if (!atDoor(x, y, "out")) return { ok: false, reason: "far", room };
+    return { ok: true, reason: "", room: "in", x: 50, y: 72 };
+  }
+
+  function tryExit(x, y, room) {
+    if (room !== "in") return { ok: false, reason: "outside", room };
+    if (!atDoor(x, y, "in")) return { ok: false, reason: "far", room };
+    return { ok: true, reason: "", room: "out", x: 68, y: 48 };
+  }
+
+  function nameOk(name) {
+    return String(name || "").trim().length >= 2;
+  }
+
   return {
-    FURS,
-    MARKS,
-    EXTRAS,
-    PIZZA,
-    OVEN,
-    TABLE_SPOTS,
-    UPGRADES,
-    NAMES,
+    HAIRS,
+    HAIR_COLORS,
+    SKINS,
+    SHIRTS,
+    OUT_ITEMS,
+    IN_ITEMS,
+    OUT_SPOTS,
+    IN_SPOTS,
+    HOUSE_DOOR,
+    HOUSE_EXIT,
+    VISITORS,
     freshSave,
-    upgradeById,
-    tableCount,
-    walkSpeed,
-    emptyTables,
-    atOven,
-    closestTable,
-    tryPickup,
-    tryPlaceOnTable,
-    eatAtReadyTables,
-    tryTakeTrash,
-    seatGuest,
-    payFor,
-    canBuy,
-    buyUpgrade,
+    itemById,
+    spotsFor,
+    itemsFor,
+    niceScore,
+    visitorCount,
+    closestSpot,
+    atDoor,
+    tryPlace,
+    tryEnter,
+    tryExit,
+    nameOk,
   };
 });

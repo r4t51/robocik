@@ -4,7 +4,7 @@ slug: "index-html"
 primary_target: "index.html"
 related_targets:
   - "styles.css"
-  - "cook.js"
+  - "world.js"
   - "data.js"
 ---
 
@@ -12,18 +12,18 @@ related_targets:
 
 Mode: experience
 
-Audience: a child on an iPad. Job: pick a cat look, walk pizza to tables, leave trash, spend coins.
+Audience: a child on an iPad. Job: pick a name and look, walk their planet, keep a house, welcome visitors when it is nice.
 
 ## Direction contract
 
-THESIS: A school-cafeteria pizza room run by a kitten. It refuses a tidy cat café and a night enamel lunch hatch.
+THESIS: A pocket globe in night space. It refuses an Animal Crossing island clone and a farm dashboard.
 
-OWN-WORLD: Linoleum yellow floor, cinderblock blue wall, peach laminate tables, ketchup actions, mushroom brown pizza. Archivo Black on the stamp sign, Sora on talk. Locked small palette, no blends.
+OWN-WORLD: Space indigo, moss ground, clay house and actions, star niceness. Grandstander on the sign, Lexend on talk.
 
-STORY: You are a cat. Take mushroom pizza from the hatch. Drop it on a table. Guests eat. Dirty trays stay. Next kid sits anyway.
+STORY: You are a person. This planet is yours. Plant it. Go into your house. People come only when it is nice.
 
-FIRST VIEWPORT: Stamp sign Pizza u Kotka, a cafeteria sheet, a huge kitten, fur chips, Biegam z pizzą. In play the room is stacked planes: wall, floor, hatch, tables. Empty tables are charged holes. Dirty plates stay as beige stacks.
+FIRST VIEWPORT: Sign Moja Planeta, a paper sheet, a big person, name field, look chips, Idę na planetę. In play the globe fills the screen: curved grass, plots, cottage, stick.
 
-FORM: School cafeteria lunch trays, assigned index 3, seed key 0fb9678e. Raises: traveling warm patch on tables (daylight section); empty seats as charged holes (ikebana ma); locked small palette (PC-98); room as stacked flat planes (WPA poster); selected look chips struck forward (cathode gauze); toasts as cafeteria announcements (phosphor).
+FORM: Pocket globe, user-pinned planet home, code-led.
 
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance

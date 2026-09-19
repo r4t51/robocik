@@ -6,31 +6,35 @@
       name="viewport"
       content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
-    <title>Moja Planeta · p1</title>
+    <title>Pizza u Kotka · kot4</title>
     <meta
       name="description"
-      content="Jesteś człowieczkiem. Masz swoją planetę i domek. Jak zrobisz ładnie, przyjeżdżają goście."
+      content="Jesteś kotkiem. Nosisz pizzę z grzybami na stoliki. Śmieci zostają."
     />
-    <meta name="theme-color" content="#1a1840" />
+    <meta name="theme-color" content="#e8c14a" />
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Grandstander:wght@600;800&family=Lexend:wght@400;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Sora:wght@400;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=p1" />
+    <link rel="stylesheet" href="styles.css?v=kot4" />
   </head>
   <body>
-    <div class="space" id="space">
-      <main class="globe">
+    <div class="canteen" id="canteen">
+      <main class="hall">
         <header class="beam">
-          <div id="sign" class="sign">Moja Planeta</div>
-          <p id="nice" class="nice">Ładnie: 0</p>
+          <div id="sign" class="sign">Pizza u Kotka</div>
+          <p id="wallet" class="wallet">
+            <span class="coin" aria-hidden="true"></span>
+            <span id="money">0</span>
+          </p>
+          <button id="shop-btn" class="mini" type="button" data-act="upgrades">Sklep</button>
         </header>
+
         <section id="stage" class="stage" aria-live="polite"></section>
         <p id="toast" class="toast" hidden></p>
-        <section id="dock" class="dock" hidden></section>
         <section id="deck" class="deck" hidden>
           <div
             id="stick"
@@ -40,11 +44,11 @@
           >
             <span id="stick-knob" class="knob"></span>
           </div>
-          <button id="act-btn" type="button">Wejdź</button>
+          <button id="act-btn" type="button">Weź</button>
         </section>
       </main>
     </div>
-    <script src="data.js?v=p1"></script>
-    <script src="world.js?v=p1"></script>
+    <script src="data.js?v=kot4"></script>
+    <script src="cook.js?v=kot4"></script>
   </body>
 </html>
