@@ -63,4 +63,22 @@ assert(hotelStay.stay === "hotel", "new guest sleeps in the hotel");
 const homeStay = data.guestCamp(0, true);
 assert(homeStay.stay === "home" && homeStay.house.x === 200, "after talk they get a house");
 
+const hotelIn = data.tryEnterTown(800, 560, "out", {}, 1);
+assert(hotelIn.ok && hotelIn.room === "hotel", "walk into the hotel");
+const hotelOut = data.tryExit(50, 86, "hotel");
+assert(hotelOut.ok && hotelOut.room === "out", "leave the hotel");
+
+const locked = data.tryEnterTown(200, 560, "out", {}, 0);
+assert(locked.reason === "empty", "no house before a guest arrives");
+const guestIn = data.tryEnterTown(200, 560, "out", {}, 1);
+assert(guestIn.ok && guestIn.room === "guest-0", "walk into a guest house");
+const guestOut = data.tryExit(50, 86, "guest-0");
+assert(guestOut.ok && guestOut.room === "out", "leave the guest house");
+
+const visit = data.tryPlace(50, 50, "hotel", "flower", {}, { flower: 1 });
+assert(visit.reason === "visit", "do not plant in the hotel");
+
+assert(data.isIndoor("hotel") && data.playing("guest-1"), "hotel and guest rooms are playable");
+assert(data.indoorGuest(0, "hotel").x === 26, "guest stands in the lobby");
+
 console.log("planet tests passed");

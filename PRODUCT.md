@@ -33,7 +33,7 @@ Open the page, write a name, pick a look, walk the planet, place things, go into
 - A house stands on the planet. Walk to the door to go in. Inside you can place a rug or a pot. Walk to the door to go out.
 - A niceness score from placed things. Visitors arrive only when the planet is nice enough. More nice, more guests.
 - A shop sells flowers, trees, lamps, stones, rugs, and pots for gold. Planting uses the bag.
-- New guests wait at the hotel. After you talk, they move into a house and you can talk again at the door.
+- Walk into the hotel. Guests wait inside. After you talk, they move into a house you can also walk into.
 - Polish copy.
 - Pizza u Kotka stays at `pizza/`. The maze stays at `labirynt/`.
 
@@ -52,6 +52,6 @@ The player asked, in Polish, for a new game: be a little person, choose a name a
 
 ## Product Principles
 
-- One loop: look → shop → walk → place → hotel → talk → guest house.
+- One loop: look → shop → walk → place → enter hotel → talk → enter guest house.
 - Big tap targets. A nearby plot or door is obvious.
 - Visitors do not come to a bare planet.

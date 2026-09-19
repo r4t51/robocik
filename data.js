@@ -116,8 +116,22 @@
     return OUT_ITEMS.concat(IN_ITEMS).find((item) => item.id === id) || null;
   }
 
+  function isIndoor(room) {
+    return Boolean(room) && room !== "out";
+  }
+
+  function playing(room) {
+    return room === "out" || room === "in" || room === "hotel" || String(room).startsWith("guest-");
+  }
+
+  function guestRoomIndex(room) {
+    if (!String(room).startsWith("guest-")) return -1;
+    const index = Number(String(room).slice(6));
+    return Number.isInteger(index) ? index : -1;
+  }
+
   function spotsFor(room) {
-    return room === "in" ? IN_SPOTS : OUT_SPOTS;
+    return room === "in" ? IN_SPOTS : room === "out" ? OUT_SPOTS : [];
   }
 
   function itemsFor(room) {
@@ -162,10 +176,18 @@
   }
 
   function atDoor(x, y, room) {
-    return room === "in" ? nearSpot(x, y, HOUSE_EXIT, 14) : nearSpot(x, y, HOUSE_DOOR, 90);
+    if (isIndoor(room)) return nearSpot(x, y, HOUSE_EXIT, 14);
+    return nearSpot(x, y, HOUSE_DOOR, 90);
+  }
+
+  function indoorGuest(index, room) {
+    if (room === "hotel") return { x: 26 + index * 24, y: 50 };
+    if (room === `guest-${index}`) return { x: 64, y: 48 };
+    return null;
   }
 
   function tryPlace(x, y, room, held, placed, bag) {
+    if (room !== "out" && room !== "in") return { ok: false, reason: "visit", placed, bag };
     if (!held) return { ok: false, reason: "empty", placed, bag };
     const item = itemById(held);
     if (!item) return { ok: false, reason: "missing", placed, bag };
@@ -221,16 +243,39 @@
     return { stay: "hotel", house: null, x: HOTEL.x - 56, y: HOTEL.y + 74 };
   }
 
+  function tryEnterTown(x, y, room, talked, guestCount) {
+    if (room !== "out") return { ok: false, reason: "inside", room };
+    const town = nearbyTown(x, y);
+    if (!town) return { ok: false, reason: "far", room };
+    if (town.kind === "shop") return { ok: false, reason: "shop", room };
+    if (town.kind === "home") return { ok: true, reason: "", room: "in", x: 50, y: 72 };
+    if (town.kind === "hotel") return { ok: true, reason: "", room: "hotel", x: 50, y: 72 };
+    if (town.kind === "guest-home") {
+      if (town.index >= (guestCount || 0)) return { ok: false, reason: "empty", room };
+      return { ok: true, reason: "", room: `guest-${town.index}`, x: 50, y: 72 };
+    }
+    return { ok: false, reason: "far", room };
+  }
+
   function tryEnter(x, y, room) {
+    const result = tryEnterTown(x, y, room, {}, 0);
+    if (result.ok && result.room === "in") return result;
     if (room !== "out") return { ok: false, reason: "inside", room };
     if (!atDoor(x, y, "out")) return { ok: false, reason: "far", room };
     return { ok: true, reason: "", room: "in", x: 50, y: 72 };
   }
 
   function tryExit(x, y, room) {
-    if (room !== "in") return { ok: false, reason: "outside", room };
-    if (!atDoor(x, y, "in")) return { ok: false, reason: "far", room };
-    return { ok: true, reason: "", room: "out", x: 1180, y: 520 };
+    if (!isIndoor(room)) return { ok: false, reason: "outside", room };
+    if (!nearSpot(x, y, HOUSE_EXIT, 14)) return { ok: false, reason: "far", room };
+    if (room === "in") return { ok: true, reason: "", room: "out", x: 1180, y: 520 };
+    if (room === "hotel") return { ok: true, reason: "", room: "out", x: HOTEL.x, y: HOTEL.y + 96 };
+    const index = guestRoomIndex(room);
+    if (index >= 0 && GUEST_HOMES[index]) {
+      const house = GUEST_HOMES[index];
+      return { ok: true, reason: "", room: "out", x: house.x, y: house.y + 90 };
+    }
+    return { ok: false, reason: "outside", room };
   }
 
   function nameOk(name) {
@@ -259,6 +304,10 @@
     VISITORS,
     emptyBag,
     freshSave,
+    isIndoor,
+    playing,
+    guestRoomIndex,
+    indoorGuest,
     itemById,
     spotsFor,
     itemsFor,
@@ -270,6 +319,7 @@
     tryBuy,
     nearbyTown,
     guestCamp,
+    tryEnterTown,
     tryEnter,
     tryExit,
     nameOk,
