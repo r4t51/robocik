@@ -10,6 +10,16 @@ const {
   parseLevel,
 } = window.RoboMaze;
 
+const {
+  START_LIVES,
+  MAX_LIVES,
+  CATALOG,
+  freshRun,
+  awardLevel,
+  buy,
+  canBuy,
+} = window.RoboShop;
+
 if (typeof CanvasRenderingContext2D !== "undefined" && !CanvasRenderingContext2D.prototype.roundRect) {
   CanvasRenderingContext2D.prototype.roundRect = function roundRect(x, y, w, h) {
     this.rect(x, y, w, h);
@@ -24,13 +34,14 @@ const JUMP_COOLDOWN_MS = 160;
 const INVINCIBLE_MS = 1300;
 const WHITE_SPEED = 46;
 const RED_SPEED = 108;
-const MAX_LIVES = 3;
 
 const canvas = document.getElementById("arena");
 const ctx = canvas.getContext("2d");
 const overlay = document.getElementById("overlay");
 const toastEl = document.getElementById("toast");
 const livesEl = document.getElementById("lives");
+const coinCountEl = document.getElementById("coin-count");
+const coinsEl = document.getElementById("coins");
 const levelEl = document.getElementById("level-name");
 const jumpEl = document.getElementById("jump-meter");
 const stickBase = document.getElementById("stick");
@@ -47,7 +58,12 @@ let audioCtx = null;
 const game = {
   mode: "title",
   levelIndex: 0,
-  lives: MAX_LIVES,
+  lives: START_LIVES,
+  coins: 0,
+  shields: 0,
+  owned: freshRun().owned,
+  lastReward: 0,
+  shopNext: "next",
   grid: null,
   start: null,
   exit: null,
@@ -92,9 +108,44 @@ function hideToastIfDue(now) {
   }
 }
 
+function applyWallet(wallet) {
+  game.coins = wallet.coins;
+  game.lives = wallet.lives;
+  game.shields = wallet.shields;
+  game.owned = { ...wallet.owned };
+}
+
+function walletState() {
+  return {
+    coins: game.coins,
+    lives: game.lives,
+    shields: game.shields,
+    owned: { ...game.owned },
+  };
+}
+
+function jumpDuration() {
+  return JUMP_MS * (game.owned.jump ? 1.38 : 1);
+}
+
+function playerSpeed() {
+  return PLAYER_SPEED * (game.owned.speed ? 1.22 : 1);
+}
+
+function enemySpeed(kind) {
+  const base = kind === "red" ? RED_SPEED : WHITE_SPEED;
+  return base * (game.owned.slow ? 0.7 : 1);
+}
+
+function renderCoins() {
+  coinCountEl.textContent = String(game.coins);
+  coinsEl.setAttribute("aria-label", `Monety: ${game.coins}`);
+}
+
 function renderLives() {
   livesEl.replaceChildren();
-  for (let i = 0; i < MAX_LIVES; i += 1) {
+  const slots = Math.max(START_LIVES, game.lives);
+  for (let i = 0; i < slots; i += 1) {
     const pip = document.createElement("span");
     pip.className = i < game.lives ? "life is-on" : "life";
     pip.setAttribute("aria-hidden", "true");
@@ -132,6 +183,7 @@ function titleScreen() {
         <li>Czerwone oczy — szybkie</li>
         <li>Białe oczy — wolne</li>
         <li>3 życia. Cel: zielone pole</li>
+        <li>Za poziom — monety. W sklepie kupujesz ulepszenia.</li>
       </ul>
       <button type="button" class="go" data-act="start">Graj</button>
     </div>`,
@@ -139,12 +191,87 @@ function titleScreen() {
   );
 }
 
+function shopRows() {
+  return CATALOG.map((item) => {
+    const check = canBuy(walletState(), item.id);
+    let status = `${item.cost}`;
+    let disabled = "";
+    if (item.once && game.owned[item.id]) {
+      status = "Masz";
+      disabled = "disabled";
+    } else if (item.id === "life" && game.lives >= MAX_LIVES) {
+      status = "Max";
+      disabled = "disabled";
+    } else if (!check.ok) {
+      disabled = "disabled";
+    }
+    return `<div class="ware">
+      <div>
+        <strong>${item.name}</strong>
+        <p>${item.blurb}</p>
+      </div>
+      <button type="button" class="buy" data-act="buy" data-id="${item.id}" ${disabled}>${status}</button>
+    </div>`;
+  }).join("");
+}
+
+function shopScreen() {
+  game.mode = "shop";
+  const nextLabel = game.shopNext === "win" ? "Meta" : "Dalej";
+  setOverlay(
+    `<div class="card shop-card">
+      <h2>Sklep</h2>
+      <p class="lead">Za ten labirynt: +${game.lastReward} monet. Masz ${game.coins}.</p>
+      <div class="wares">${shopRows()}</div>
+      <button type="button" class="go" data-act="leave-shop">${nextLabel}</button>
+    </div>`,
+    true,
+  );
+}
+
+function leaveShop() {
+  bootAudio();
+  tone(330, 90);
+  if (game.shopNext === "win") {
+    winScreen();
+    return;
+  }
+  game.mode = "play";
+  overlay.hidden = true;
+  overlay.classList.remove("is-open");
+  loadLevel(game.levelIndex + 1);
+  showToast("Następny labirynt");
+}
+
+function buyItem(id) {
+  const result = buy(walletState(), id);
+  if (!result.ok) {
+    showToast(result.reason === "poor" ? "Za mało monet" : "Nie teraz");
+    tone(90, 120, "sawtooth", 0.04);
+    return;
+  }
+  applyWallet(result.state);
+  renderCoins();
+  renderLives();
+  tone(520, 80, "triangle");
+  shopScreen();
+}
+
+function finishLevel() {
+  const payout = awardLevel(walletState(), game.levelIndex);
+  applyWallet(payout.state);
+  game.lastReward = payout.reward;
+  game.shopNext = game.levelIndex >= LEVELS.length - 1 ? "win" : "next";
+  renderCoins();
+  shopScreen();
+}
+
 function winScreen() {
   game.mode = "win";
   setOverlay(
     `<div class="card">
       <h2>Udało się</h2>
-      <p class="lead">Trzy labirynty, zero ścianek na finiszu. Robocik doładowany.</p>
+      <p class="lead">Trzy labirynty i ${game.coins} monet w kieszeni. Robocik doładowany.</p>
       <button type="button" class="go" data-act="start">Jeszcze raz</button>
     </div>`,
     true,
@@ -197,10 +324,11 @@ function startRun() {
   bootAudio();
   tone(220, 80);
   tone(330, 120);
-  game.lives = MAX_LIVES;
+  applyWallet(freshRun());
   game.mode = "play";
   overlay.hidden = true;
   overlay.classList.remove("is-open");
+  renderCoins();
   loadLevel(0);
   showToast("Do zielonego pola");
 }
@@ -231,9 +359,16 @@ function resetToStart(reason) {
 }
 
 function loseLife() {
-  game.lives -= 1;
   game.player.hurtT = INVINCIBLE_MS;
   game.shake = 16;
+  if (game.shields > 0) {
+    game.shields -= 1;
+    burst(game.player.x, game.player.y, "#ffd166", 14);
+    tone(400, 140, "triangle", 0.05);
+    showToast("Tarcza!");
+    return;
+  }
+  game.lives -= 1;
   burst(game.player.x, game.player.y, "#ff4d4d", 16);
   renderLives();
   tone(70, 220, "square", 0.06);
@@ -248,7 +383,7 @@ function tryJump() {
   const player = game.player;
   if (!player || game.mode !== "play") return;
   if (player.jumpT > 0 || player.jumpCool > 0) return;
-  player.jumpT = JUMP_MS;
+  player.jumpT = jumpDuration();
   tone(480, 70, "triangle", 0.045);
   burst(player.x, player.y, "#7ee0d0", 6);
 }
@@ -275,7 +410,7 @@ function stepPlayer(dt) {
     player.facing = { x: move.x, y: move.y };
   }
 
-  const speed = PLAYER_SPEED * (player.jumpT > 0 ? 1.12 : 1);
+  const speed = playerSpeed() * (player.jumpT > 0 ? 1.12 : 1);
   player.x += move.x * speed * dt;
   player.y += move.y * speed * dt;
   if (player.jumpT <= 0 && move.mag > 0.15) {
@@ -295,7 +430,7 @@ function stepPlayer(dt) {
     player.jumpT -= dt * 1000;
     if (player.jumpT <= 0) {
       player.jumpT = 0;
-      player.jumpCool = JUMP_COOLDOWN_MS;
+      player.jumpCool = JUMP_COOLDOWN_MS * (game.owned.jump ? 0.85 : 1);
       if (circleHitsWall(game.grid, player.x, player.y, PLAYER_RADIUS)) {
         resetToStart("Lądowanie na ściance");
       }
@@ -319,12 +454,7 @@ function stepPlayer(dt) {
   if (onExit && player.jumpT <= 0) {
     tone(520, 90, "triangle");
     tone(720, 140, "triangle");
-    if (game.levelIndex >= LEVELS.length - 1) {
-      winScreen();
-    } else {
-      loadLevel(game.levelIndex + 1);
-      showToast("Następny labirynt");
-    }
+    finishLevel();
   }
 }
 
@@ -361,7 +491,7 @@ function stepRobots(dt) {
       robot.think = robot.kind === "red" ? 0.28 : 0.55;
     }
 
-    const speed = robot.kind === "red" ? RED_SPEED : WHITE_SPEED;
+    const speed = enemySpeed(robot.kind);
     const nx = robot.x + robot.dir.x * speed * dt;
     const ny = robot.y + robot.dir.y * speed * dt;
     if (circleHitsWall(game.grid, nx, ny, ENEMY_RADIUS)) {
@@ -393,7 +523,7 @@ function stepParticles(dt) {
 
 function hopHeight(player) {
   if (player.jumpT <= 0) return 0;
-  const t = 1 - player.jumpT / JUMP_MS;
+  const t = 1 - player.jumpT / jumpDuration();
   return Math.sin(Math.PI * t);
 }
 
@@ -542,7 +672,7 @@ function drawActors() {
     body: "#2bb8aa",
     head: "#3ed6c6",
     metal: "#14665e",
-    tip: "#ffd166",
+    tip: game.shields > 0 ? "#fff4c2" : "#ffd166",
     eye: "#14323a",
     glow: "rgba(255, 209, 102, 0.35)",
     tread: "#0f4c46",
@@ -631,10 +761,11 @@ window.addEventListener("keydown", (event) => {
     event.preventDefault();
   }
   keys.add(key);
-  if (key === " " || key === "j") tryJump();
-  if ((key === "enter" || key === " ") && game.mode !== "play") {
+  if ((key === " " || key === "j") && game.mode === "play") tryJump();
+  if ((key === "enter" || key === " ") && (game.mode === "title" || game.mode === "over" || game.mode === "win")) {
     startRun();
   }
+  if (key === "enter" && game.mode === "shop") leaveShop();
 });
 
 window.addEventListener("keyup", (event) => {
@@ -648,14 +779,35 @@ jumpBtn.addEventListener("pointerdown", (event) => {
 });
 
 overlay.addEventListener("click", (event) => {
-  const btn = event.target.closest("[data-act=start]");
-  if (btn) startRun();
+  const startBtn = event.target.closest("[data-act=start]");
+  if (startBtn) {
+    startRun();
+    return;
+  }
+  const nextBtn = event.target.closest("[data-act=leave-shop]");
+  if (nextBtn) {
+    leaveShop();
+    return;
+  }
+  const buyBtn = event.target.closest("[data-act=buy]");
+  if (buyBtn && !buyBtn.disabled) buyItem(buyBtn.dataset.id);
 });
 
 bindStick(stickBase);
 renderLives();
+renderCoins();
 renderJump(true);
-if (new URLSearchParams(window.location.search).has("play")) {
+const params = new URLSearchParams(window.location.search);
+if (params.has("shop")) {
+  startRun();
+  const payout = awardLevel(walletState(), 0);
+  applyWallet(payout.state);
+  game.coins = Math.max(game.coins, 20);
+  game.lastReward = payout.reward;
+  game.shopNext = "next";
+  renderCoins();
+  shopScreen();
+} else if (params.has("play")) {
   startRun();
 } else {
   titleScreen();

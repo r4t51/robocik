@@ -33,6 +33,7 @@ The player opens the page, reads four rules, presses Graj, and plays immediately
 - Other robots patrol. Red eyes are faster and chase when they can see you. White eyes are slower.
 - Touching a robot costs a life. The player starts with 3 lives.
 - Three hand-built mazes. Reach the green pad to go on.
+- Finishing a maze pays coins. A shop between mazes sells extra life, longer jump, faster walk, a shield, and slower robots.
 - Polish language, matching the request.
 - Keyboard (arrows / WASD + space) and touch.
 

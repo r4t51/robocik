@@ -9,7 +9,7 @@
     <title>Robocik · labirynt</title>
     <meta
       name="description"
-      content="Jesteś robocikiem. Przeskakuj ścianki, omijaj czerwone oczy i dojdź do wyjścia. Masz trzy życia."
+      content="Jesteś robocikiem. Przeskakuj ścianki, zbieraj monety za poziomy i kupuj ulepszenia."
     />
     <meta name="theme-color" content="#c65a24" />
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
@@ -26,7 +26,13 @@
       <div class="mat" aria-hidden="true"></div>
       <main class="toy">
         <header class="faceplate">
-          <h1>Robocik</h1>
+          <div class="title-row">
+            <h1>Robocik</h1>
+            <p id="coins" class="coin-chip" aria-live="polite">
+              <span class="coin-dot" aria-hidden="true"></span>
+              <span id="coin-count">0</span>
+            </p>
+          </div>
           <div class="dials">
             <div class="dial">
               <span class="dial-name">Życia</span>
@@ -66,6 +72,7 @@
       </main>
     </div>
     <script src="maze.js"></script>
+    <script src="shop.js"></script>
     <script src="main.js"></script>
   </body>
 </html>
