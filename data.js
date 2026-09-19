@@ -45,6 +45,22 @@
   const HOUSE_DOOR = { x: 1280, y: 420 };
   const HOUSE_EXIT = { x: 50, y: 86 };
   const PLAZA = { x: 640, y: 560 };
+  const SHOP = { x: 380, y: 320, name: "Sklep" };
+  const HOTEL = { x: 1040, y: 320, name: "Hotel" };
+  const GUEST_HOMES = [
+    { x: 200, y: 560 },
+    { x: 1140, y: 900 },
+    { x: 1460, y: 640 },
+  ];
+
+  const WARES = [
+    { id: "flower", name: "Kwiat", cost: 3 },
+    { id: "tree", name: "Drzewko", cost: 5 },
+    { id: "lamp", name: "Latarnia", cost: 4 },
+    { id: "rock", name: "Kamień", cost: 2 },
+    { id: "rug", name: "Dywan", cost: 4 },
+    { id: "pot", name: "Doniczka", cost: 4 },
+  ];
 
   const WILD = [
     { kind: "tree", x: 180, y: 280 },
@@ -58,11 +74,31 @@
   ];
 
   const VISITORS = [
-    { name: "Ania", line: "U ciebie jest tak ładnie. Lubię tu chodzić." },
-    { name: "Kuba", line: "Ta planeta jest cała twoja? Super domek." },
-    { name: "Maja", line: "Posadź jeszcze kwiatki koło ścieżki." },
-    { name: "Tomek", line: "Przyszedłem, bo tu jest miło i cicho." },
+    {
+      name: "Ania",
+      line: "Przyjechałam do hotelu. U ciebie jest tak ładnie.",
+      home: "To już mój domek. Wpadnij, jak będziesz obok.",
+    },
+    {
+      name: "Kuba",
+      line: "Spałem w hotelu. Ta planeta jest cała twoja?",
+      home: "Mam już swój dom. Dzięki, że gadamy.",
+    },
+    {
+      name: "Maja",
+      line: "Hotel jest spoko, ale chcę swój domek.",
+      home: "Tu mieszkam. Posadź jeszcze kwiatki koło ścieżki.",
+    },
+    {
+      name: "Tomek",
+      line: "Przyszedłem, bo tu jest miło i cicho.",
+      home: "Mój domek stoi. Zapraszam na herbatę.",
+    },
   ];
+
+  function emptyBag() {
+    return { flower: 3, tree: 1, lamp: 0, rock: 1, rug: 1, pot: 0 };
+  }
 
   function freshSave() {
     return {
@@ -70,6 +106,9 @@
       look: { hair: 0, hairColor: 1, skin: 0, shirt: 2 },
       placed: {},
       room: "out",
+      money: 12,
+      bag: emptyBag(),
+      talked: {},
     };
   }
 
@@ -126,22 +165,60 @@
     return room === "in" ? nearSpot(x, y, HOUSE_EXIT, 14) : nearSpot(x, y, HOUSE_DOOR, 90);
   }
 
-  function tryPlace(x, y, room, held, placed) {
-    if (!held) return { ok: false, reason: "empty", placed };
+  function tryPlace(x, y, room, held, placed, bag) {
+    if (!held) return { ok: false, reason: "empty", placed, bag };
     const item = itemById(held);
-    if (!item) return { ok: false, reason: "missing", placed };
+    if (!item) return { ok: false, reason: "missing", placed, bag };
+    const pack = bag || { [held]: 1 };
+    if ((pack[held] || 0) < 1) return { ok: false, reason: "none", placed, bag: pack };
     const indoor = IN_ITEMS.some((entry) => entry.id === held);
-    if (indoor !== (room === "in")) return { ok: false, reason: "wrong-room", placed };
+    if (indoor !== (room === "in")) return { ok: false, reason: "wrong-room", placed, bag: pack };
     const range = room === "in" ? 13 : 80;
     const spot = closestSpot(x, y, spotsFor(room), range);
-    if (!spot) return { ok: false, reason: "far", placed };
-    if (placed[spot.id]) return { ok: false, reason: "taken", placed };
+    if (!spot) return { ok: false, reason: "far", placed, bag: pack };
+    if (placed[spot.id]) return { ok: false, reason: "taken", placed, bag: pack };
     return {
       ok: true,
       reason: "",
       placed: { ...placed, [spot.id]: held },
+      bag: { ...pack, [held]: pack[held] - 1 },
       spotId: spot.id,
     };
+  }
+
+  function tryBuy(save, id) {
+    const ware = WARES.find((item) => item.id === id);
+    if (!ware) return { ok: false, reason: "missing", save };
+    if (save.money < ware.cost) return { ok: false, reason: "poor", save };
+    return {
+      ok: true,
+      reason: "",
+      save: {
+        ...save,
+        money: save.money - ware.cost,
+        bag: { ...save.bag, [id]: (save.bag[id] || 0) + 1 },
+        look: { ...save.look },
+        placed: { ...save.placed },
+        talked: { ...save.talked },
+      },
+    };
+  }
+
+  function nearbyTown(x, y) {
+    if (nearSpot(x, y, SHOP, 90)) return { kind: "shop" };
+    if (nearSpot(x, y, HOTEL, 90)) return { kind: "hotel" };
+    if (nearSpot(x, y, HOUSE_DOOR, 90)) return { kind: "home" };
+    const index = GUEST_HOMES.findIndex((spot) => nearSpot(x, y, spot, 80));
+    if (index >= 0) return { kind: "guest-home", index };
+    return null;
+  }
+
+  function guestCamp(index, talked) {
+    if (talked && GUEST_HOMES[index]) {
+      const house = GUEST_HOMES[index];
+      return { stay: "home", house, x: house.x - 46, y: house.y + 54 };
+    }
+    return { stay: "hotel", house: null, x: HOTEL.x - 56, y: HOTEL.y + 74 };
   }
 
   function tryEnter(x, y, room) {
@@ -174,8 +251,13 @@
     HOUSE_DOOR,
     HOUSE_EXIT,
     PLAZA,
+    SHOP,
+    HOTEL,
+    GUEST_HOMES,
+    WARES,
     WILD,
     VISITORS,
+    emptyBag,
     freshSave,
     itemById,
     spotsFor,
@@ -185,6 +267,9 @@
     closestSpot,
     atDoor,
     tryPlace,
+    tryBuy,
+    nearbyTown,
+    guestCamp,
     tryEnter,
     tryExit,
     nameOk,

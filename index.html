@@ -6,10 +6,10 @@
       name="viewport"
       content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
-    <title>Moja Planeta · p3</title>
+    <title>Moja Planeta · p4</title>
     <meta
       name="description"
-      content="Jesteś człowieczkiem. Masz swoją planetę i domek. Jak zrobisz ładnie, przyjeżdżają goście."
+      content="Jesteś człowieczkiem. Masz sklep, hotel i planetę. Goście przyjeżdżają, gadają i biorą swój dom."
     />
     <meta name="theme-color" content="#1a1840" />
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
@@ -19,7 +19,7 @@
       href="https://fonts.googleapis.com/css2?family=Grandstander:wght@600;800&family=Lexend:wght@400;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=p3" />
+    <link rel="stylesheet" href="styles.css?v=p4" />
   </head>
   <body>
     <div class="space" id="space">
@@ -33,6 +33,12 @@
         <aside id="talk" class="talk" hidden>
           <strong id="talk-name"></strong>
           <span id="talk-line"></span>
+        </aside>
+        <aside id="shop" class="shop-sheet" hidden>
+          <strong>Sklep</strong>
+          <p id="shop-cash">Masz 12 zł</p>
+          <div id="shop-list" class="wares"></div>
+          <button type="button" class="go" data-act="leave-shop">Wychodzę</button>
         </aside>
         <section id="dock" class="dock" hidden></section>
         <section id="deck" class="deck" hidden>
@@ -48,7 +54,7 @@
         </section>
       </main>
     </div>
-    <script src="data.js?v=p3"></script>
-    <script src="world.js?v=p3"></script>
+    <script src="data.js?v=p4"></script>
+    <script src="world.js?v=p4"></script>
   </body>
 </html>

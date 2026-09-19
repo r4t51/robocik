@@ -41,4 +41,26 @@ assert(rug.ok, "rug in the house");
 const leave = data.tryExit(50, 86, "in");
 assert(leave.ok && leave.room === "out", "walk back out");
 
+const none = data.tryPlace(360, 520, "out", "flower", {}, { flower: 0 });
+assert(none.reason === "none", "empty bag cannot plant");
+
+const spent = data.tryPlace(360, 520, "out", "flower", {}, { flower: 2 });
+assert(spent.ok && spent.bag.flower === 1, "planting uses the bag");
+
+const buy = data.tryBuy(save, "flower");
+assert(buy.ok && buy.save.money === 9 && buy.save.bag.flower === 4, "shop sells a flower");
+
+const broke = data.tryBuy({ ...save, money: 1, bag: data.emptyBag() }, "tree");
+assert(broke.reason === "poor", "tree costs more than 1");
+
+assert(data.nearbyTown(380, 320).kind === "shop", "shop door");
+assert(data.nearbyTown(1040, 320).kind === "hotel", "hotel door");
+assert(data.nearbyTown(1280, 420).kind === "home", "own house");
+assert(data.nearbyTown(200, 560).kind === "guest-home", "guest house lot");
+
+const hotelStay = data.guestCamp(0, false);
+assert(hotelStay.stay === "hotel", "new guest sleeps in the hotel");
+const homeStay = data.guestCamp(0, true);
+assert(homeStay.stay === "home" && homeStay.house.x === 200, "after talk they get a house");
+
 console.log("planet tests passed");

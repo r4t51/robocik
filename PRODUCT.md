@@ -16,7 +16,7 @@ A child on a phone or iPad who wants a quiet decorate-and-visit game. They alrea
 
 ## Product Purpose
 
-You are a little person. You pick a name and a look. The whole planet is yours. You have a house. If you make the planet nice, people come to visit.
+You are a little person. You pick a name and a look. The whole planet is yours. You have a house, a shop, and a hotel. If you make the planet nice, people come to the hotel. Talk to them and they move into their own house.
 
 ## Positioning
 
@@ -32,6 +32,8 @@ Open the page, write a name, pick a look, walk the planet, place things, go into
 - You walk the planet. Empty plots take a flower, tree, lamp, or stone.
 - A house stands on the planet. Walk to the door to go in. Inside you can place a rug or a pot. Walk to the door to go out.
 - A niceness score from placed things. Visitors arrive only when the planet is nice enough. More nice, more guests.
+- A shop sells flowers, trees, lamps, stones, rugs, and pots for gold. Planting uses the bag.
+- New guests wait at the hotel. After you talk, they move into a house and you can talk again at the door.
 - Polish copy.
 - Pizza u Kotka stays at `pizza/`. The maze stays at `labirynt/`.
 
@@ -41,7 +43,8 @@ Open the page, write a name, pick a look, walk the planet, place things, go into
 - You are a person, not a cat.
 - The planet is yours.
 - People come if you make it nice.
-- You have a house.
+- You have a house, a shop, and a hotel.
+- Guests get a house after you talk.
 
 ## Evidence on Hand
 
@@ -49,6 +52,6 @@ The player asked, in Polish, for a new game: be a little person, choose a name a
 
 ## Product Principles
 
-- One loop: look → walk → place → house → visitors.
+- One loop: look → shop → walk → place → hotel → talk → guest house.
 - Big tap targets. A nearby plot or door is obvious.
 - Visitors do not come to a bare planet.
