@@ -315,12 +315,113 @@ body {
 }
 
 .furn.cross {
-  left: 68%;
-  top: 30%;
+  left: 82%;
+  top: 22%;
   width: 2.2rem;
   height: 2.2rem;
   background: #c45a3a;
   clip-path: polygon(35% 0, 65% 0, 65% 35%, 100% 35%, 100% 65%, 65% 65%, 65% 100%, 35% 100%, 35% 65%, 0 65%, 0 35%, 35% 35%);
+}
+
+.rack {
+  position: absolute;
+  width: 18%;
+  height: 0.55rem;
+  background: #6b3f2a;
+  box-shadow: 0 5px 0 rgba(26, 24, 64, 0.12);
+  z-index: 1;
+}
+
+.rack.one {
+  left: 6%;
+  top: 62%;
+}
+
+.rack.two {
+  right: 6%;
+  left: auto;
+  top: 62%;
+}
+
+.rack.three {
+  left: 6%;
+  right: 6%;
+  width: auto;
+  top: 84%;
+}
+
+.shelf,
+.chair {
+  position: absolute;
+  transform: translate(-50%, -50%);
+}
+
+.shelf {
+  width: 3.2rem;
+  display: grid;
+  justify-items: center;
+  z-index: 2;
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.shelf.is-near,
+.chair.is-near {
+  outline: 4px solid var(--clay);
+  outline-offset: 3px;
+}
+
+.shelf.is-empty {
+  opacity: 0.35;
+}
+
+.shelf em {
+  font-style: normal;
+  font-size: 0.7rem;
+}
+
+.shelf svg {
+  width: 1.8rem;
+  height: 1.8rem;
+}
+
+.chair {
+  width: 4.2rem;
+  height: 4.4rem;
+  display: grid;
+  justify-items: center;
+  align-content: end;
+  z-index: 2;
+  background: #6b3f2a;
+  box-shadow: inset 0 16px 0 #c45a3a;
+}
+
+.chair b,
+.shelf b {
+  position: absolute;
+  top: -1.15rem;
+  padding: 0.05rem 0.3rem;
+  background: var(--paper);
+  white-space: nowrap;
+}
+
+.say {
+  position: absolute;
+  top: -2.35rem;
+  padding: 0.12rem 0.35rem;
+  background: var(--ink);
+  color: var(--star);
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.held {
+  position: absolute;
+  right: -0.4rem;
+  top: 0.2rem;
+  width: 1.5rem;
 }
 
 .furn {
@@ -565,6 +666,12 @@ body {
 
 .shop-sheet .go {
   margin-top: 0.2rem;
+}
+
+.ware-head {
+  margin: 0.35rem 0 0;
+  font-weight: 700;
+  color: #3d6b4f;
 }
 
 .wares {

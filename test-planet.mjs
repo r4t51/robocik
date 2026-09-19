@@ -84,11 +84,43 @@ assert(data.indoorGuest(0, "hotel").x === 26, "guest stands in the lobby");
 
 assert(data.nearbyTown(640, 760).kind === "clinic", "clinic door");
 const clinicIn = data.tryEnterTown(640, 760, "out", {}, 1);
-assert(clinicIn.ok && clinicIn.room === "clinic", "walk into the clinic");
+assert(clinicIn.ok && clinicIn.room === "clinic" && clinicIn.y === 42, "walk into the clinic among the patients");
 const clinicOut = data.tryExit(50, 86, "clinic");
 assert(clinicOut.ok && clinicOut.room === "out", "leave the clinic");
 assert(data.folkIn("hotel").some((person) => person.name === "Zosia"), "receptionist in the hotel");
 assert(data.folkIn("clinic").some((person) => person.name === "Olek"), "doctor in the clinic");
 assert(data.playing("clinic"), "clinic is playable");
+
+const clinicSave = data.freshSave();
+assert(clinicSave.stock.syrup === 2 && clinicSave.stock.plaster == null, "starter bottles on the planet shelves");
+assert(!("jailUntil" in clinicSave), "no jail on the planet");
+
+const chairs = data.emptyChairs();
+const sick = data.makeGuest(0, clinicSave.stock);
+assert(sick.need === "syrup" && sick.say === "Kaszel", "first patient wants cough syrup");
+chairs[0].guest = sick;
+
+assert(data.tryTreat(22, 36, null, chairs).reason === "empty", "need a bottle in hand");
+const wrong = data.tryTreat(22, 36, "pill", chairs);
+assert(wrong.reason === "wrong" && !wrong.jail, "wrong medicine does not send you to jail");
+const heal = data.tryTreat(22, 36, "syrup", chairs);
+assert(heal.ok && heal.pay === 6, "patient pays for the right medicine");
+
+const firstShelf = data.shelfSpots(clinicSave.stock)[0];
+const grab = data.tryGrab(firstShelf.x, firstShelf.y, null, clinicSave.stock);
+assert(grab.ok && grab.held === "syrup", "pick syrup from the clinic shelf");
+
+const dry = data.tryGrab(firstShelf.x, firstShelf.y, null, { syrup: 0, drops: 2, salve: 2 });
+assert(dry.reason === "none", "empty shelf cannot be taken");
+
+const buyMed = data.tryBuy({ ...clinicSave, money: 12 }, "plaster");
+assert(buyMed.ok && buyMed.save.stock.plaster === 1 && buyMed.save.money === 0, "shop sells a plaster for the clinic");
+assert(data.shelfSpots(buyMed.save.stock).some((spot) => spot.id === "plaster"), "bought plaster sits on a shelf");
+
+const restock = data.tryBuy({ ...clinicSave, money: 10, stock: data.starterStock() }, "syrup");
+assert(restock.ok && restock.save.stock.syrup === 3, "buy another bottle of syrup");
+
+const stillFlower = data.tryBuy({ ...clinicSave, money: 12, stock: data.starterStock() }, "flower");
+assert(stillFlower.ok && stillFlower.save.bag.flower === 4 && stillFlower.save.stock.syrup === 2, "flowers still sell and stock stays");
 
 console.log("planet tests passed");

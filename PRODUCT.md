@@ -32,9 +32,10 @@ Open the page, write a name, pick a look, walk the planet, place things, go into
 - You walk the planet. Empty plots take a flower, tree, lamp, or stone.
 - A house stands on the planet. Walk to the door to go in. Inside you can place a rug or a pot. Walk to the door to go out.
 - A niceness score from placed things. Ania is already at the hotel. More nice, more guests.
-- A shop sells flowers, trees, lamps, stones, rugs, and pots for gold. Planting uses the bag.
+- A shop sells flowers, trees, lamps, stones, rugs, pots, and clinic medicines for gold. Planting uses the bag.
 - Walk into the hotel. Zosia works the desk. Ania waits inside. After you talk, guests move into a house you can also walk into.
-- Walk into the clinic and talk to Olek, the doctor.
+- Walk into the clinic. Shelves hold medicines. Give the right bottle to a patient and they pay. The wrong bottle does nothing. Olek is there to talk.
+- The shop also sells new plasters and extra bottles onto those shelves.
 - Polish copy.
 - Pizza u Kotka stays at `pizza/`. The maze stays at `labirynt/`.
 
@@ -53,6 +54,6 @@ The player asked, in Polish, for a new game: be a little person, choose a name a
 
 ## Product Principles
 
-- One loop: look → shop → walk → place → enter hotel → talk → enter guest house.
+- One loop: look → shop → walk → place → enter hotel → talk → enter clinic → treat.
 - Big tap targets. A nearby plot or door is obvious.
 - Visitors do not come to a bare planet.

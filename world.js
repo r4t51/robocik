@@ -22,6 +22,9 @@ const game = {
   save: D.freshSave(),
   player: { x: D.START.x, y: D.START.y },
   held: "flower",
+  heldMed: null,
+  chairs: [],
+  nextGuest: 0,
   visitors: [],
   toastUntil: 0,
   last: 0,
@@ -45,6 +48,7 @@ function loadSave() {
       placed: { ...parsed.placed },
       bag: { ...fresh.bag, ...(parsed.bag || {}) },
       talked: { ...(parsed.talked || {}) },
+      stock: { ...fresh.stock, ...(parsed.stock || {}) },
       money: Number.isFinite(parsed.money) ? parsed.money : fresh.money,
     };
   } catch (err) {
@@ -196,7 +200,7 @@ function createScreen() {
   stage.innerHTML = `
     <div class="sheet create">
       <h1>Jesteś człowieczkiem</h1>
-      <p class="lead">Wpisz imię i wybierz wygląd. Wejdź do hotelu — Zosia i Ania już tam są. Jest też lekarz. Gadaj z gośćmi, to biorą swój dom.</p>
+      <p class="lead">Wpisz imię i wybierz wygląd. Wejdź do lekarza — bierz z półek i dawaj chorym. Oni płacą. Hotel i sklep też są.</p>
       <label class="name-box">Imię
         <input id="name-in" type="text" maxlength="12" value="${name}" placeholder="np. Ola" />
       </label>
@@ -276,7 +280,7 @@ function roomDecor(room) {
     return `<div class="furn desk"><span>Recepcja</span></div><div class="furn bed one"></div><div class="furn bed two"></div>`;
   }
   if (room === "clinic") {
-    return `<div class="furn bench"></div><div class="furn cross"></div><p class="who-lives">Lekarz Olek</p>`;
+    return `<div class="furn cross"></div><p class="who-lives">Gabinet</p>`;
   }
   const index = D.guestRoomIndex(room);
   if (index >= 0) {
@@ -286,6 +290,60 @@ function roomDecor(room) {
     return `<div class="furn table"></div><div class="furn window"></div><p class="who-lives">${lived ? `Tu mieszka ${who}` : `${who} jeszcze w hotelu`}</p>`;
   }
   return "";
+}
+
+function medSvg(id) {
+  const med = D.medById(id);
+  const color = med ? med.color : "#888";
+  if (id === "pill") {
+    return `<svg viewBox="0 0 40 40" aria-hidden="true"><rect x="8" y="16" width="24" height="10" rx="5" fill="${color}"/><rect x="20" y="16" width="12" height="10" rx="5" fill="#fff6e8"/></svg>`;
+  }
+  if (id === "salve") {
+    return `<svg viewBox="0 0 40 40" aria-hidden="true"><rect x="12" y="14" width="16" height="16" fill="${color}"/><rect x="14" y="10" width="12" height="6" fill="#0f3d3e"/></svg>`;
+  }
+  if (id === "plaster") {
+    return `<svg viewBox="0 0 40 40" aria-hidden="true"><rect x="6" y="15" width="28" height="10" rx="3" fill="${color}"/><rect x="16" y="17" width="8" height="6" fill="#fff6e8"/></svg>`;
+  }
+  if (id === "drops") {
+    return `<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 8 L28 28 H12Z" fill="${color}"/><circle cx="20" cy="30" r="4" fill="#fff6e8"/></svg>`;
+  }
+  return `<svg viewBox="0 0 40 40" aria-hidden="true"><rect x="14" y="8" width="12" height="8" fill="#0f3d3e"/><rect x="12" y="16" width="16" height="16" fill="${color}"/></svg>`;
+}
+
+function patientSvg(look) {
+  const skin = D.SKINS[look.skin] || D.SKINS[0];
+  const shirt = D.SHIRTS[look.shirt] || D.SHIRTS[0];
+  return `<svg viewBox="0 0 48 56" width="58" height="68" aria-hidden="true">
+    <path d="M14 30 Q24 26 34 30 L36 50 H12Z" fill="${shirt}"/>
+    <circle cx="24" cy="18" r="9" fill="${skin}"/>
+    <path d="M15 16 Q24 8 33 16 L33 20 H15Z" fill="#2a1a12"/>
+    <circle cx="21" cy="19" r="1.2" fill="#1a1840"/>
+    <circle cx="27" cy="19" r="1.2" fill="#1a1840"/>
+  </svg>`;
+}
+
+function fillChairs() {
+  if (!game.chairs.length) game.chairs = D.emptyChairs();
+  game.chairs.forEach((chair) => {
+    if (chair.guest) return;
+    chair.guest = D.makeGuest(game.nextGuest, game.save.stock);
+    game.nextGuest += 1;
+  });
+}
+
+function clinicBits() {
+  if (game.save.room !== "clinic") return "";
+  fillChairs();
+  const spots = D.shelfSpots(game.save.stock);
+  return `<div class="rack one"></div><div class="rack two"></div><div class="rack three"></div>${spots
+    .map((spot) => {
+      const med = D.medById(spot.id);
+      const count = game.save.stock[spot.id] || 0;
+      return `<div class="shelf ${count < 1 ? "is-empty" : ""}" data-med="${spot.id}" style="left:${spot.x}%;top:${spot.y}%">${medSvg(spot.id)}<b>${med ? med.ailment : ""}</b><em>×${count}</em></div>`;
+    })
+    .join("")}${game.chairs
+    .map((chair) => `<div class="chair" data-chair="${chair.id}" style="left:${chair.x}%;top:${chair.y}%"></div>`)
+    .join("")}`;
 }
 
 function playScreen() {
@@ -328,8 +386,9 @@ function playScreen() {
             )
             .join("")}
           ${wild}
+          ${clinicBits()}
           <div id="guests"></div>
-          <div class="you" id="you">${personSvg(game.save.look, { size: indoor ? 96 : 86 })}</div>
+          <div class="you" id="you">${personSvg(game.save.look, { size: indoor ? 96 : 86 })}<span class="held" id="held"></span></div>
         </div>
       </div>
     </div>
@@ -351,11 +410,20 @@ function renderDock() {
 function renderShop() {
   if (!shopEl || !shopList || !shopCash) return;
   shopCash.textContent = `Masz ${game.save.money} zł`;
-  shopList.innerHTML = D.WARES.map((ware) => {
+  const plants = D.WARES.map((ware) => {
     const count = game.save.bag[ware.id] || 0;
     const poor = game.save.money < ware.cost;
     return `<button type="button" class="ware ${poor ? "is-poor" : ""}" data-act="buy" data-id="${ware.id}">${decorSvg(ware.id)}<span>${ware.name}</span><b>${ware.cost} zł</b><em>masz ${count}</em></button>`;
   }).join("");
+  const meds = D.MEDS.map((med) => {
+    const unlocked = Number.isFinite(game.save.stock[med.id]);
+    const price = unlocked ? D.restockCost(med) : med.cost || 8;
+    const count = game.save.stock[med.id] || 0;
+    const poor = game.save.money < price;
+    const label = unlocked ? `dokup +1 · masz ${count}` : `nowe na półkę · ${med.ailment}`;
+    return `<button type="button" class="ware ${poor ? "is-poor" : ""}" data-act="buy" data-id="${med.id}">${medSvg(med.id)}<span>${med.name}</span><b>${price} zł</b><em>${label}</em></button>`;
+  }).join("");
+  shopList.innerHTML = `${plants}<p class="ware-head">Lekarstwa do gabinetu</p>${meds}`;
 }
 
 function openShop() {
@@ -431,6 +499,38 @@ function paintRoom() {
       .join("");
   }
 
+  const held = document.getElementById("held");
+  if (held) held.innerHTML = game.save.room === "clinic" && game.heldMed ? medSvg(game.heldMed) : "";
+
+  if (game.save.room === "clinic") {
+    const spots = D.shelfSpots(game.save.stock);
+    const shelfHot = D.closestSpot(game.player.x, game.player.y, spots, 14);
+    document.querySelectorAll("[data-med]").forEach((node) => {
+      const count = game.save.stock[node.dataset.med] || 0;
+      node.classList.toggle("is-near", Boolean(shelfHot) && shelfHot.id === node.dataset.med);
+      node.classList.toggle("is-empty", count < 1);
+      const tally = node.querySelector("em");
+      if (tally) tally.textContent = `×${count}`;
+    });
+    const chairHot = D.closestSpot(game.player.x, game.player.y, game.chairs, 14);
+    game.chairs.forEach((chair) => {
+      const node = document.querySelector(`[data-chair="${chair.id}"]`);
+      if (!node) return;
+      node.classList.toggle("is-near", Boolean(chairHot) && chairHot.id === chair.id && Boolean(chair.guest));
+      node.innerHTML = chair.guest
+        ? `${patientSvg(chair.guest.look)}<span class="say">${chair.guest.say}</span><b>${chair.guest.name}</b>`
+        : "";
+    });
+    const nearPerson = nearbyPerson();
+    if (shopEl && !shopEl.hidden) actBtn.textContent = "Wychodzę";
+    else if (doorHot) actBtn.textContent = "Wychodzę";
+    else if (shelfHot) actBtn.textContent = "Weź";
+    else if (chairHot && chairHot.guest) actBtn.textContent = "Daj";
+    else if (nearPerson) actBtn.textContent = "Gadam";
+    else actBtn.textContent = "A";
+    return;
+  }
+
   const nearPerson = nearbyPerson();
   const nearPlot = D.closestSpot(game.player.x, game.player.y, D.spotsFor(game.save.room), range);
   if (shopEl && !shopEl.hidden) actBtn.textContent = "Wychodzę";
@@ -481,7 +581,7 @@ function openWorld() {
   persist();
   syncVisitors();
   playScreen();
-  showToast(`${game.save.name}, hotel, lekarz, sadź i gadaj.`);
+  showToast(`${game.save.name}, hotel, lecz w gabinecie, sadź i gadaj.`);
 }
 
 function doPlace() {
@@ -550,13 +650,15 @@ function doBuy(id) {
   renderDock();
   renderShop();
   const ware = D.WARES.find((item) => item.id === id);
-  showToast(`Kupione: ${ware ? ware.name : id}`);
+  const med = D.medById(id);
+  showToast(`Kupione: ${ware ? ware.name : med ? med.name : id}`);
+  if (med && game.save.room === "clinic") playScreen();
 }
 
 function enterToast(room) {
   if (room === "in") return "To twój dom";
   if (room === "hotel") return "Hotel. Zosia i goście są w środku.";
-  if (room === "clinic") return "Gabinet lekarza";
+  if (room === "clinic") return "Gabinet. Bierz z półki i dawaj choremu.";
   const index = D.guestRoomIndex(room);
   if (index >= 0 && game.visitors[index]) return `Domek ${game.visitors[index].name}`;
   return "W środku";
@@ -599,6 +701,46 @@ function doDoor() {
   return true;
 }
 
+function doClinic() {
+  const grab = D.tryGrab(game.player.x, game.player.y, game.heldMed, game.save.stock);
+  if (grab.ok) {
+    game.heldMed = grab.held;
+    const med = D.medById(grab.held);
+    showToast(med ? med.name : "Lekarstwo");
+    paintRoom();
+    return true;
+  }
+  if (grab.reason === "none") {
+    showToast("Pusto. Kup w sklepie.");
+    return true;
+  }
+  const treat = D.tryTreat(game.player.x, game.player.y, game.heldMed, game.chairs);
+  if (treat.reason === "empty") {
+    showToast("Najpierw weź lekarstwo");
+    return true;
+  }
+  if (treat.reason === "wrong") {
+    showToast("Złe lekarstwo. Weź inne.");
+    return true;
+  }
+  if (!treat.ok) return false;
+  const chair = game.chairs.find((seat) => seat.id === treat.chairId);
+  const name = chair && chair.guest ? chair.guest.name : "Pacjent";
+  const pay = treat.pay || 6;
+  if (chair) chair.guest = null;
+  if (game.heldMed) {
+    game.save.stock[game.heldMed] = Math.max(0, (game.save.stock[game.heldMed] || 0) - 1);
+  }
+  game.heldMed = null;
+  game.save.money += pay;
+  persist();
+  renderNice();
+  fillChairs();
+  showToast(`${name} płaci ${pay} zł`);
+  paintRoom();
+  return true;
+}
+
 function doAction() {
   if (!D.playing(game.mode)) return;
   if (shopEl && !shopEl.hidden) {
@@ -613,6 +755,7 @@ function doAction() {
     doDoor();
     return;
   }
+  if (game.save.room === "clinic" && doClinic()) return;
   const near = nearbyPerson();
   if (near) {
     talkWith(near);
@@ -633,7 +776,7 @@ function doAction() {
     }
   }
   if (D.isIndoor(game.save.room) && game.save.room !== "in") {
-    showToast("Podejdź do gościa albo do drzwi");
+    showToast(game.save.room === "clinic" ? "Podejdź do półki, chorego albo do drzwi" : "Podejdź do gościa albo do drzwi");
     return;
   }
   doPlace();
@@ -785,7 +928,7 @@ if (new URLSearchParams(location.search).has("play") && D.nameOk(game.save.name 
   const inside = new URLSearchParams(location.search).get("inside");
   if (inside && D.playing(inside) && inside !== "out") {
     game.save.room = inside;
-    game.player = { x: 50, y: 72 };
+    game.player = { x: 50, y: inside === "clinic" ? 42 : 72 };
     playScreen();
   }
 } else {
