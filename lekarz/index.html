@@ -6,36 +6,31 @@
       name="viewport"
       content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
-    <title>Pizza u Kotka · kot5</title>
+    <title>Lekarz · l1</title>
     <meta
       name="description"
-      content="Jesteś kotkiem. Nosisz pizzę z grzybami na stoliki. Śmieci zostają."
+      content="Jesteś lekarzem. Podajesz specjalne lekarstwa. Złe lekarstwo = trzy minuty w więzieniu."
     />
-    <meta name="theme-color" content="#e8c14a" />
+    <meta name="theme-color" content="#0f3d3e" />
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Sora:wght@400;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&family=Nunito:wght@400;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=kot5" />
+    <link rel="stylesheet" href="styles.css?v=l1" />
   </head>
   <body>
-    <div class="canteen" id="canteen">
-      <main class="hall">
+    <div class="ward" id="ward">
+      <main class="clinic">
         <header class="beam">
-          <div id="sign" class="sign">Pizza u Kotka</div>
-          <p id="wallet" class="wallet">
-            <span class="coin" aria-hidden="true"></span>
-            <span id="money">0</span>
-          </p>
-          <button id="shop-btn" class="mini" type="button" data-act="upgrades">Sklep</button>
+          <div id="sign" class="sign">Lekarz</div>
+          <p id="score" class="score">Wyleczeni: 0</p>
         </header>
-
         <section id="stage" class="stage" aria-live="polite"></section>
         <p id="toast" class="toast" hidden></p>
-        <section id="deck" class="deck" hidden>
+        <section id="deck" class="deck">
           <div
             id="stick"
             class="stick"
@@ -48,7 +43,7 @@
         </section>
       </main>
     </div>
-    <script src="data.js?v=kot5"></script>
-    <script src="cook.js?v=kot5"></script>
+    <script src="data.js?v=l1"></script>
+    <script src="clinic.js?v=l1"></script>
   </body>
 </html>

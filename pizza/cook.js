@@ -188,7 +188,9 @@ function createScreen() {
         </div>
       </div>
       <button type="button" class="go" data-act="open-bar">Biegam z pizzą</button>
-      <a class="side" href="labirynt/">Robocik · labirynt</a>
+      <a class="side" href="../lekarz/">Lekarz · gabinet</a>
+      <a class="side" href="../">Moja Planeta</a>
+      <a class="side" href="../labirynt/">Robocik · labirynt</a>
     </div>
   `;
 }
