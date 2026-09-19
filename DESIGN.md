@@ -8,9 +8,11 @@ colors:
   ketchup: "#c4281c"
   milk: "#fff4dc"
   mushroom: "#6b4a2a"
+  ink: "#2a1a12"
+  sauce: "#b42318"
 typography:
   display:
-    fontFamily: "Ultra, Trebuchet MS, serif"
+    fontFamily: "Archivo Black, Trebuchet MS, sans-serif"
     fontSize: "clamp(1.6rem, 7vw, 2.4rem)"
     fontWeight: 400
     lineHeight: 0.95
@@ -40,7 +42,7 @@ The game is a school cafeteria at pizza lunch. Linoleum is the floor. Cinderbloc
 
 ## Typography
 
-Ultra on the stamp sign, titles, and fat buttons. Sora on rules and upgrade blurbs.
+Archivo Black on the stamp sign, titles, and fat buttons. Sora on rules and upgrade blurbs. It keeps Polish letters.
 
 ## Layout
 

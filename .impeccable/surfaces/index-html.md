@@ -25,7 +25,7 @@ Audience: a child on an iPad. Job: pick a cat look, walk pizza to tables, leave 
 
 THESIS: A school-cafeteria pizza room run by a kitten. It refuses a tidy cat café and a night enamel lunch hatch.
 
-OWN-WORLD: Linoleum yellow floor, cinderblock blue wall, peach laminate tables, ketchup actions, mushroom brown pizza. Ultra on the stamp sign, Sora on talk. Locked small palette, no blends.
+OWN-WORLD: Linoleum yellow floor, cinderblock blue wall, peach laminate tables, ketchup actions, mushroom brown pizza. Archivo Black on the stamp sign, Sora on talk. Locked small palette, no blends.
 
 STORY: You are a cat. Take mushroom pizza from the hatch. Drop it on a table. Guests eat. Dirty trays stay. Next kid sits anyway.
 

@@ -89,6 +89,7 @@ function catSvg(look, opts) {
       <circle cx="27" cy="26" r="1.6" fill="#1b1410"/>
       <circle cx="37" cy="26" r="1.6" fill="#1b1410"/>
       <path d="M32 28 L30 31 L34 31Z" fill="#e07a9a"/>
+      <path d="M14 29 H8 M50 29 H56 M16 32 H9 M48 32 H55" stroke="#2a1a12" stroke-width="1.4"/>
       <path d="M18 44 Q10 50 16 56" fill="none" stroke="${fur}" stroke-width="4"/>
       ${bow}${bell}
     </g>
@@ -108,11 +109,12 @@ function guestSvg(look) {
 
 function pizzaSvg() {
   return `<svg viewBox="0 0 48 48" aria-hidden="true">
-    <path d="M24 8 L42 38 H6Z" fill="#e8b15a"/>
-    <path d="M24 14 L36 34 H12Z" fill="#d6452a"/>
-    <circle cx="20" cy="26" r="2.2" fill="#8a6a3b"/>
-    <circle cx="27" cy="30" r="2.2" fill="#8a6a3b"/>
-    <circle cx="24" cy="22" r="1.8" fill="#6b5344"/>
+    <circle cx="24" cy="24" r="16" fill="#e8b15a"/>
+    <circle cx="24" cy="24" r="12" fill="#c4281c"/>
+    <circle cx="19" cy="20" r="2.4" fill="#6b4a2a"/>
+    <circle cx="28" cy="22" r="2.2" fill="#6b4a2a"/>
+    <circle cx="23" cy="28" r="2.3" fill="#6b4a2a"/>
+    <circle cx="30" cy="29" r="1.8" fill="#6b4a2a"/>
   </svg>`;
 }
 
@@ -268,7 +270,7 @@ function upgradeScreen() {
               <p>${item.blurb}</p>
             </div>
             <button type="button" class="buy" data-act="buy" data-id="${item.id}" ${owned || !check.ok ? "disabled" : ""}>
-              ${owned ? "Masz" : item.cost}
+              ${owned ? "Masz" : `Kup ${item.cost}`}
             </button>
           </div>`;
         }).join("")}

@@ -22,7 +22,7 @@ const tables = data.emptyTables({});
 const guest = { id: 1, name: "Ola", patience: 10, maxPatience: 10 };
 assert(data.seatGuest(tables, guest).ok, "guest sits");
 assert(!data.tryPlaceOnTable(50, 86, "pizza", tables).ok, "must walk to the table");
-assert(data.tryPlaceOnTable(24, 36, "pizza", tables).ok, "pizza lands on the table");
+assert(data.tryPlaceOnTable(24, 38, "pizza", tables).ok, "pizza lands on the table");
 assert(tables[0].pizza, "table has pizza");
 
 const eaten = data.eatAtReadyTables(tables, {});

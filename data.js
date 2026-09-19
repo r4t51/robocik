@@ -13,10 +13,10 @@
   const OVEN = { x: 50, y: 86, recipeId: "pizza", name: "Pizza z grzybami" };
 
   const TABLE_SPOTS = [
-    { id: 0, x: 24, y: 36 },
-    { id: 1, x: 76, y: 36 },
-    { id: 2, x: 50, y: 58 },
-    { id: 3, x: 24, y: 72 },
+    { id: 0, x: 24, y: 38 },
+    { id: 1, x: 70, y: 38 },
+    { id: 2, x: 48, y: 60 },
+    { id: 3, x: 26, y: 74 },
   ];
 
   const UPGRADES = [
