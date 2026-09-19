@@ -14,6 +14,7 @@ assert(start.lives === 3, "new run starts with 3 lives");
 const afterOne = shop.awardLevel(start, 0);
 assert(afterOne.reward === 8, "first level pays 8");
 assert(afterOne.state.coins === 8, "coins are added");
+assert(shop.coinsForLevel(9) === 32, "tenth level pays the most");
 
 assert(shop.buy(afterOne.state, "missing").reason === "missing", "unknown item is rejected");
 assert(shop.buy({ ...afterOne.state, coins: 5 }, "slow").reason === "poor", "too few coins");

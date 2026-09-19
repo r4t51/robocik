@@ -183,9 +183,12 @@ function titleScreen() {
         <li>Czerwone oczy — szybkie</li>
         <li>Białe oczy — wolne</li>
         <li>3 życia. Cel: zielone pole</li>
-        <li>Za poziom — monety. W sklepie kupujesz ulepszenia.</li>
+        <li>10 labiryntów. Za poziom — monety. W sklepie ulepszenia.</li>
       </ul>
       <button type="button" class="go" data-act="start">Graj</button>
+      <a class="side" href="planeta/">Moja Planeta</a>
+      <a class="side" href="pizza/">Pizza u Kotka</a>
+      <a class="side" href="lekarz/">Lekarz</a>
     </div>`,
     true,
   );
@@ -271,7 +274,7 @@ function winScreen() {
   setOverlay(
     `<div class="card">
       <h2>Udało się</h2>
-      <p class="lead">Trzy labirynty i ${game.coins} monet w kieszeni. Robocik doładowany.</p>
+      <p class="lead">Dziesięć labiryntów i ${game.coins} monet w kieszeni. Robocik doładowany.</p>
       <button type="button" class="go" data-act="start">Jeszcze raz</button>
     </div>`,
     true,

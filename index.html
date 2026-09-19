@@ -6,55 +6,73 @@
       name="viewport"
       content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
-    <title>Moja Planeta · p8</title>
+    <title>Robocik · r10</title>
     <meta
       name="description"
-      content="Jesteś człowieczkiem. W gabinecie leczysz, pacjenci płacą. Hotel, sklep i twoja planeta."
+      content="Jesteś robocikiem. 10 labiryntów. Przeskakuj ścianki, zbieraj monety i kupuj ulepszenia."
     />
-    <meta name="theme-color" content="#1a1840" />
+    <meta name="theme-color" content="#c65a24" />
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Grandstander:wght@600;800&family=Lexend:wght@400;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Rowdies:wght@400;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=p8" />
+    <link rel="stylesheet" href="styles.css?v=r10" />
   </head>
   <body>
-    <div class="space" id="space">
-      <main class="globe">
-        <header class="beam">
-          <div id="sign" class="sign">Moja Planeta</div>
-          <p id="nice" class="nice">Ładnie: 0</p>
+    <div class="desk">
+      <div class="mat" aria-hidden="true"></div>
+      <main class="toy">
+        <header class="faceplate">
+          <div class="title-row">
+            <h1>Robocik</h1>
+            <p id="coins" class="coin-chip" aria-live="polite">
+              <span class="coin-dot" aria-hidden="true"></span>
+              <span id="coin-count">0</span>
+            </p>
+          </div>
+          <div class="dials">
+            <div class="dial">
+              <span class="dial-name">Życia</span>
+              <div id="lives" class="lives" aria-live="polite"></div>
+            </div>
+            <div class="dial">
+              <span class="dial-name">Labirynt</span>
+              <p id="level-name">—</p>
+            </div>
+            <div class="dial">
+              <span class="dial-name">Gotowy</span>
+              <p id="jump-meter" class="jump-meter is-ready">SKOK</p>
+            </div>
+          </div>
         </header>
-        <section id="stage" class="stage" aria-live="polite"></section>
-        <p id="toast" class="toast" hidden></p>
-        <aside id="talk" class="talk" hidden>
-          <strong id="talk-name"></strong>
-          <span id="talk-line"></span>
-        </aside>
-        <aside id="shop" class="shop-sheet" hidden>
-          <strong>Sklep</strong>
-          <p id="shop-cash">Masz 12 zł</p>
-          <div id="shop-list" class="wares"></div>
-          <button type="button" class="go" data-act="leave-shop">Wychodzę</button>
-        </aside>
-        <section id="dock" class="dock" hidden></section>
-        <section id="deck" class="deck" hidden>
+
+        <section class="screen" aria-label="Labirynt">
+          <canvas id="arena" width="840" height="600"></canvas>
+          <p id="toast" class="toast" hidden></p>
+          <div id="overlay" class="overlay is-open"></div>
+        </section>
+
+        <section class="deck" aria-label="Sterowanie">
           <div
             id="stick"
             class="stick"
             role="application"
-            aria-label="Chodzenie. Na komputerze strzałki albo WASD."
+            aria-label="Chodzenie. Na komputerze użyj strzałek."
           >
             <span id="stick-knob" class="knob"></span>
           </div>
-          <button id="act-btn" type="button">Wejdź</button>
+          <div class="jump-wrap">
+            <button id="jump-btn" type="button">Skok</button>
+            <p>Spacja albo ten przycisk</p>
+          </div>
         </section>
       </main>
     </div>
-    <script src="data.js?v=p8"></script>
-    <script src="world.js?v=p8"></script>
+    <script src="maze.js?v=r10"></script>
+    <script src="shop.js?v=r10"></script>
+    <script src="main.js?v=r10"></script>
   </body>
 </html>

@@ -60,7 +60,7 @@
   }
 
   function coinsForLevel(levelIndex) {
-    return [8, 12, 16][levelIndex] || 10;
+    return [8, 12, 16, 18, 20, 22, 24, 26, 28, 32][levelIndex] || 10;
   }
 
   function findItem(id) {

@@ -17,6 +17,8 @@ function assert(condition, message) {
   }
 }
 
+assert(LEVELS.length === 10, "there are 10 labyrinths");
+
 LEVELS.forEach((level, index) => {
   const parsed = parseLevel(level.rows);
   assert(parsed.start, `level ${index} has start`);
@@ -54,5 +56,9 @@ assert(second.robots.some((robot) => robot.kind === "white"), "level 2 has a whi
 const third = parseLevel(LEVELS[2].rows);
 assert(third.robots.filter((robot) => robot.kind === "red").length === 2, "level 3 has two red robots");
 assert(third.robots.filter((robot) => robot.kind === "white").length === 2, "level 3 has two white robots");
+
+const last = parseLevel(LEVELS[9].rows);
+assert(last.robots.filter((robot) => robot.kind === "red").length >= 3, "level 10 has several red robots");
+assert(LEVELS[9].name === "Rdzeń", "last labyrinth is the core");
 
 console.log("maze tests passed");
