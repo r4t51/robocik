@@ -12,39 +12,45 @@ Static HTML, CSS, and JavaScript. Open `index.html`, or the published GitHub Pag
 
 ## Users
 
-A child or anyone who wants a short cooking-shop game on a phone or iPad. They already play Robocik from the same site; that maze stays at `labirynt/`.
+A child or anyone who wants a short walking shop game on a phone or iPad. They already play Robocik from the same site; that maze stays at `labirynt/`.
 
 ## Product Purpose
 
-You are a person behind a lunch window. You pick a haircut and clothes, cook what customers ask for, take their coins, and spend those coins on shop upgrades.
+You are a kitten in a pizza room. You pick fur and marks, walk to the oven, carry mushroom pizza to tables, take coins, and spend those coins on parlor upgrades. Dirty plates stay. The kitten does not take trash.
 
 ## Positioning
 
-A bazaar enamel stall at dusk, not a cottage café and not a spreadsheet sim.
+A messy pizza parlor run by a cat that only delivers pizza. Tables fill with leftover plates. New guests sit anyway. It is not a tidy café sim and not a human lunch window.
 
 ## Operating Context
 
-Open the page, set a look, tap Do baru, cook, serve, upgrade. Progress sits in localStorage on that device. No account.
+Open the page, set a cat look, tap Biegam z pizzą, walk, drop pizza on a table, upgrade. Progress sits in localStorage (`kot-pizza-save`) on that device. No account.
 
 ## Capabilities and Constraints
 
-- Character creator: hairstyle, hair color, skin, shirt, glasses or scarf.
-- Customers arrive with an order. Walk to a shelf, pick the dish up, carry it to the counter. It places itself. The matching customer takes it.
-- Money from sales. A shop screen sells faster stove, second burner, longer queue, pierogi recipe, tips, and a louder sign.
+- Character creator: fur color, marks (plain / patches / stripes), extra (none / bow / bell).
+- You walk. The oven is the only pickup. The only food is mushroom pizza (`Pizza z grzybami`).
+- There are tables. Walk a pizza to a seated guest and it places itself. After a short eat, they pay and leave trash.
+- Trash is not a job. `tryTakeTrash` always fails. Tapping leftover plates says they stay.
+- The next guest may sit at a dirty table.
+- Money from sales. A shop screen sells a louder sign, faster walk, a fourth table, and bigger slices.
 - Polish copy.
 - The old maze remains at `labirynt/`.
 
 ## Brand Commitments
 
-- Name: Bar Mniam.
-- Night teal street, mint enamel stall, paprika buttons, lemon coins.
+- Name: Pizza u Kotka.
+- You are a kitten, not a person.
+- Only mushroom pizza.
+- Tables, not a single counter queue.
+- Trash stays.
 
 ## Evidence on Hand
 
-The player asked, in Polish, to be a person who chooses hair and look, run a shop, cook for incoming customers, take in-game money, and upgrade the shop with it.
+The player asked, in Polish, to stop being a little human, be a kitten, have tables, sell only mushroom pizza (“kij grzyb pizza”), and not take away trash.
 
 ## Product Principles
 
-- One loop: look → cook → serve → upgrade.
-- Big tap targets. A matching ready plate makes the customer glow.
-- Wrong or late service pays nothing.
+- One loop: look → walk pizza to a table → guest eats → trash stays → upgrade.
+- Big tap targets. A nearby oven or table is obvious.
+- Late guests leave with no pay. Wrong jobs (trash) do nothing.

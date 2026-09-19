@@ -5,87 +5,57 @@
     module.exports = api;
   }
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
-  const SKINS = ["#f3c7a6", "#e0a07a", "#b56a43", "#7a3f24"];
-  const HAIR_COLORS = ["#2a1c14", "#6b3a1f", "#c46a2d", "#d8b15a", "#3d2b55"];
-  const SHIRTS = ["#d6452a", "#2f6f5e", "#2d4a7c", "#f0b429", "#6b3f6e"];
-  const HAIR_STYLES = ["krótke", "grzywka", "kucyk", "lok", "kolce"];
-  const EXTRAS = ["nic", "okulary", "chusta"];
+  const FURS = ["#d9b48a", "#f4d35e", "#c45a24", "#6b5344", "#2a2118"];
+  const MARKS = ["gładki", "łaty", "paski"];
+  const EXTRAS = ["nic", "kokarda", "dzwonek"];
 
-  const RECIPES = [
-    { id: "tea", name: "Herbata", cookMs: 2200, pay: 4, unlock: null },
-    { id: "sandwich", name: "Kanapka", cookMs: 3200, pay: 6, unlock: null },
-    { id: "soup", name: "Zupa", cookMs: 4000, pay: 8, unlock: null },
-    { id: "pancake", name: "Naleśnik", cookMs: 5000, pay: 10, unlock: null },
-    { id: "pierogi", name: "Pierogi", cookMs: 6200, pay: 14, unlock: "pierogi" },
+  const PIZZA = { id: "pizza", name: "Pizza z grzybami", pay: 8 };
+  const OVEN = { x: 50, y: 86, recipeId: "pizza", name: "Pizza z grzybami" };
+
+  const TABLE_SPOTS = [
+    { id: 0, x: 24, y: 36 },
+    { id: 1, x: 76, y: 36 },
+    { id: 2, x: 50, y: 58 },
+    { id: 3, x: 24, y: 72 },
   ];
 
   const UPGRADES = [
-    { id: "sign", name: "Nowy szyld", blurb: "Bar wygląda dumniej.", cost: 18 },
-    { id: "stove", name: "Szybkie nogi", blurb: "Chodzisz szybciej po kuchni.", cost: 24 },
-    { id: "line", name: "Większa kolejka", blurb: "Trzeci klient może czekać.", cost: 32 },
-    { id: "burner2", name: "Szersza lada", blurb: "Na ladzie mieszczą się dwa dania.", cost: 40 },
-    { id: "pierogi", name: "Półka z pierogami", blurb: "Nowe danie, więcej monet.", cost: 28 },
-    { id: "tips", name: "Słoik na napiwki", blurb: "Klienci płacą więcej.", cost: 45 },
+    { id: "sign", name: "Nowy szyld", blurb: "Pizzeria kota wygląda dumniej.", cost: 16 },
+    { id: "stove", name: "Szybkie łapki", blurb: "Kotek biega szybciej.", cost: 22 },
+    { id: "line", name: "Czwarty stolik", blurb: "Jeszcze jeden stół na sali.", cost: 30 },
+    { id: "tips", name: "Większe kawałki", blurb: "Klienci płacą więcej za pizzę.", cost: 36 },
   ];
-
-  const STATION_SPOTS = {
-    tea: { x: 16, y: 48 },
-    sandwich: { x: 16, y: 74 },
-    soup: { x: 84, y: 48 },
-    pancake: { x: 84, y: 74 },
-    pierogi: { x: 50, y: 86 },
-  };
 
   const NAMES = ["Ola", "Janek", "Basia", "Tomek", "Maja", "Kuba", "Zosia", "Bartek"];
 
   function freshSave() {
     return {
-      look: {
-        skin: 0,
-        hair: 2,
-        hairColor: 1,
-        shirt: 0,
-        extra: 0,
-      },
+      look: { fur: 0, mark: 1, extra: 1 },
       money: 0,
       owned: {},
     };
-  }
-
-  function recipeById(id) {
-    return RECIPES.find((recipe) => recipe.id === id) || null;
   }
 
   function upgradeById(id) {
     return UPGRADES.find((item) => item.id === id) || null;
   }
 
-  function isUnlocked(owned, recipe) {
-    return !recipe.unlock || Boolean(owned[recipe.unlock]);
-  }
-
-  function openRecipes(owned) {
-    return RECIPES.filter((recipe) => isUnlocked(owned, recipe));
-  }
-
-  function lineLimit(owned) {
-    return owned.line ? 3 : 2;
+  function tableCount(owned) {
+    return owned.line ? 4 : 3;
   }
 
   function walkSpeed(owned) {
-    return owned.stove ? 54 : 38;
+    return owned.stove ? 56 : 40;
   }
 
-  function plateLimit(owned) {
-    return owned.burner2 ? 2 : 1;
-  }
-
-  function stationsFor(owned) {
-    return openRecipes(owned).map((recipe) => ({
-      recipeId: recipe.id,
-      name: recipe.name,
-      x: STATION_SPOTS[recipe.id].x,
-      y: STATION_SPOTS[recipe.id].y,
+  function emptyTables(owned) {
+    return TABLE_SPOTS.slice(0, tableCount(owned)).map((spot) => ({
+      id: spot.id,
+      x: spot.x,
+      y: spot.y,
+      guest: null,
+      pizza: false,
+      trash: false,
     }));
   }
 
@@ -99,58 +69,56 @@
     return dist2(x, y, spot.x, spot.y) <= range * range;
   }
 
-  function closestStation(x, y, owned, range) {
-    return (
-      stationsFor(owned).find((spot) => nearSpot(x, y, spot, range)) || null
-    );
+  function atOven(x, y) {
+    return nearSpot(x, y, OVEN, 14);
   }
 
-  function atCounter(y) {
-    return y <= 34;
+  function closestTable(x, y, tables, range) {
+    return tables.find((table) => nearSpot(x, y, table, range)) || null;
   }
 
-  function tryPickup(x, y, held, owned) {
+  function tryPickup(x, y, held) {
     if (held) return { ok: false, reason: "full", held };
-    const spot = closestStation(x, y, owned, 13);
-    if (!spot) return { ok: false, reason: "far", held };
-    return { ok: true, reason: "", held: spot.recipeId, name: spot.name };
+    if (!atOven(x, y)) return { ok: false, reason: "far", held };
+    return { ok: true, reason: "", held: "pizza", name: PIZZA.name };
   }
 
-  function tryPlace(y, held, plates, owned) {
-    if (!held) return { ok: false, reason: "empty", held, plates };
-    if (!atCounter(y)) return { ok: false, reason: "far", held, plates };
-    if (plates.length >= plateLimit(owned)) return { ok: false, reason: "full", held, plates };
-    return {
-      ok: true,
-      reason: "",
-      held: null,
-      plates: plates.concat([{ recipeId: held }]),
-    };
+  function tryPlaceOnTable(x, y, held, tables) {
+    if (held !== "pizza") return { ok: false, reason: "empty", tables };
+    const table = closestTable(x, y, tables, 14);
+    if (!table) return { ok: false, reason: "far", tables };
+    if (!table.guest) return { ok: false, reason: "empty-table", tables };
+    if (table.pizza) return { ok: false, reason: "has-pizza", tables };
+    table.pizza = true;
+    return { ok: true, reason: "", held: null, tables, tableId: table.id };
   }
 
-  function autoTake(plates, customers, owned) {
-    for (let i = 0; i < customers.length; i += 1) {
-      const guest = customers[i];
-      const plateIndex = plates.findIndex((plate) => plate.recipeId === guest.recipeId);
-      if (plateIndex === -1) continue;
-      const recipe = recipeById(guest.recipeId);
-      const pay = payFor(recipe, owned, guest.patience / guest.maxPatience);
-      return {
-        ok: true,
-        pay,
-        name: guest.name,
-        dish: recipe.name,
-        plates: plates.filter((_, index) => index !== plateIndex),
-        customers: customers.filter((person) => person.id !== guest.id),
-      };
-    }
-    return { ok: false, plates, customers };
+  function payFor(owned, patienceRatio) {
+    const tip = owned.tips ? 1.3 : 1;
+    const hurry = 0.8 + 0.3 * Math.max(0, Math.min(1, patienceRatio));
+    return Math.max(2, Math.round(PIZZA.pay * tip * hurry));
   }
 
-  function payFor(recipe, owned, patienceRatio) {
-    const tip = owned.tips ? 1.25 : 1;
-    const hurry = 0.75 + 0.35 * Math.max(0, Math.min(1, patienceRatio));
-    return Math.max(1, Math.round(recipe.pay * tip * hurry));
+  function eatAtReadyTables(tables, owned) {
+    const ready = tables.find((table) => table.guest && table.pizza);
+    if (!ready) return { ok: false, tables };
+    const guest = ready.guest;
+    const pay = payFor(owned, guest.patience / guest.maxPatience);
+    ready.pizza = false;
+    ready.trash = true;
+    ready.guest = null;
+    return { ok: true, pay, name: guest.name, tables };
+  }
+
+  function tryTakeTrash() {
+    return { ok: false, reason: "no-trash-job" };
+  }
+
+  function seatGuest(tables, guest) {
+    const free = tables.find((table) => !table.guest);
+    if (!free) return { ok: false, tables };
+    free.guest = guest;
+    return { ok: true, tables, tableId: free.id };
   }
 
   function canBuy(save, id) {
@@ -178,30 +146,26 @@
   }
 
   return {
-    SKINS,
-    HAIR_COLORS,
-    SHIRTS,
-    HAIR_STYLES,
+    FURS,
+    MARKS,
     EXTRAS,
-    RECIPES,
+    PIZZA,
+    OVEN,
+    TABLE_SPOTS,
     UPGRADES,
     NAMES,
-    STATION_SPOTS,
     freshSave,
-    recipeById,
     upgradeById,
-    isUnlocked,
-    openRecipes,
-    lineLimit,
+    tableCount,
     walkSpeed,
-    plateLimit,
-    stationsFor,
-    nearSpot,
-    closestStation,
-    atCounter,
+    emptyTables,
+    atOven,
+    closestTable,
     tryPickup,
-    tryPlace,
-    autoTake,
+    tryPlaceOnTable,
+    eatAtReadyTables,
+    tryTakeTrash,
+    seatGuest,
     payFor,
     canBuy,
     buyUpgrade,

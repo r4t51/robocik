@@ -9,20 +9,20 @@ const stickBase = document.getElementById("stick");
 const stickKnob = document.getElementById("stick-knob");
 const actBtn = document.getElementById("act-btn");
 
-const SAVE_KEY = "bar-mniam-save";
+const SAVE_KEY = "kot-pizza-save";
 
 const game = {
   mode: "create",
   save: D.freshSave(),
-  player: { x: 50, y: 58 },
+  player: { x: 50, y: 50 },
   held: null,
-  plates: [],
-  customers: [],
-  spawnIn: 700,
+  tables: [],
+  spawnIn: 400,
   nextId: 1,
   toastUntil: 0,
   last: 0,
-  placedOnce: false,
+  placedAt: null,
+  eatIn: 0,
 };
 
 const keys = new Set();
@@ -59,88 +59,88 @@ function renderMoney() {
   signEl.classList.toggle("is-fancy", Boolean(game.save.owned.sign));
 }
 
-function personSvg(look, opts) {
-  const skin = D.SKINS[look.skin] || D.SKINS[0];
-  const hair = D.HAIR_COLORS[look.hairColor] || D.HAIR_COLORS[0];
-  const shirt = D.SHIRTS[look.shirt] || D.SHIRTS[0];
-  const hairCut = look.hair || 0;
+function catSvg(look, opts) {
+  const fur = D.FURS[look.fur] || D.FURS[0];
+  const mark = look.mark || 0;
   const extra = look.extra || 0;
+  const size = (opts && opts.size) || 72;
   const flip = opts && opts.flip ? 'transform="translate(64,0) scale(-1,1)"' : "";
-  const size = (opts && opts.size) || 64;
-
-  let hairShape = `<path d="M18 22 C18 10 46 10 46 22 V28 H18Z" fill="${hair}"/>`;
-  if (hairCut === 1) {
-    hairShape = `<path d="M16 20 C18 8 46 8 48 22 L48 30 H16Z" fill="${hair}"/><path d="M18 22 H46 V28 H18Z" fill="${hair}"/>`;
-  } else if (hairCut === 2) {
-    hairShape = `<path d="M18 20 C18 9 46 9 46 22 V27 H18Z" fill="${hair}"/><ellipse cx="50" cy="34" rx="6" ry="10" fill="${hair}"/>`;
-  } else if (hairCut === 3) {
-    hairShape = `<circle cx="22" cy="18" r="8" fill="${hair}"/><circle cx="42" cy="18" r="8" fill="${hair}"/><path d="M18 22 H46 V28 H18Z" fill="${hair}"/>`;
-  } else if (hairCut === 4) {
-    hairShape = `<path d="M18 26 L22 8 L28 24 L32 6 L38 24 L42 8 L46 26 Z" fill="${hair}"/>`;
-  }
-
-  const glasses =
-    extra === 1
-      ? `<g fill="none" stroke="#1b1410" stroke-width="2"><circle cx="26" cy="30" r="5"/><circle cx="38" cy="30" r="5"/><path d="M31 30 H33"/></g>`
+  const belly = mark === 1 ? "#fff4e0" : fur;
+  const stripes =
+    mark === 2
+      ? `<path d="M20 34 H44" stroke="#2a2118" stroke-width="2"/><path d="M22 40 H42" stroke="#2a2118" stroke-width="2"/>`
       : "";
-  const scarf =
-    extra === 2
-      ? `<path d="M22 46 Q32 54 42 46 L40 58 L32 52 L24 58Z" fill="#f4d35e"/>`
+  const spots =
+    mark === 1
+      ? `<circle cx="22" cy="36" r="3" fill="#2a2118"/><circle cx="40" cy="42" r="2.4" fill="#2a2118"/>`
       : "";
+  const bow = extra === 1 ? `<path d="M26 46 L32 50 L38 46 L32 52Z" fill="#d6452a"/>` : "";
+  const bell = extra === 2 ? `<circle cx="32" cy="52" r="3.2" fill="#f4d35e"/>` : "";
 
-  return `<svg class="who" viewBox="0 0 64 72" width="${size}" height="${Math.round((size * 72) / 64)}" aria-hidden="true">
+  return `<svg class="who" viewBox="0 0 64 64" width="${size}" height="${size}" aria-hidden="true">
     <g ${flip}>
-      <ellipse cx="32" cy="68" rx="14" ry="3" fill="rgba(0,0,0,0.18)"/>
-      <path d="M20 48 Q32 44 44 48 L46 68 H18Z" fill="${shirt}"/>
-      <rect x="22" y="50" width="20" height="8" fill="#f3efe4"/>
-      <circle cx="32" cy="30" r="14" fill="${skin}"/>
-      ${hairShape}
-      <circle cx="27" cy="31" r="1.7" fill="#1b1410"/>
-      <circle cx="37" cy="31" r="1.7" fill="#1b1410"/>
-      <path d="M28 37 Q32 40 36 37" fill="none" stroke="#1b1410" stroke-width="1.4"/>
-      ${glasses}${scarf}
+      <ellipse cx="32" cy="60" rx="13" ry="3" fill="rgba(0,0,0,0.18)"/>
+      <ellipse cx="32" cy="42" rx="16" ry="13" fill="${fur}"/>
+      <ellipse cx="32" cy="44" rx="9" ry="8" fill="${belly}"/>
+      ${stripes}${spots}
+      <path d="M16 22 L22 8 L26 24Z" fill="${fur}"/>
+      <path d="M48 22 L42 8 L38 24Z" fill="${fur}"/>
+      <circle cx="32" cy="26" r="12" fill="${fur}"/>
+      <circle cx="27" cy="26" r="1.6" fill="#1b1410"/>
+      <circle cx="37" cy="26" r="1.6" fill="#1b1410"/>
+      <path d="M32 28 L30 31 L34 31Z" fill="#e07a9a"/>
+      <path d="M18 44 Q10 50 16 56" fill="none" stroke="${fur}" stroke-width="4"/>
+      ${bow}${bell}
     </g>
   </svg>`;
 }
 
-function dishSvg(id) {
-  if (id === "tea") {
-    return `<svg viewBox="0 0 48 48" aria-hidden="true"><ellipse cx="22" cy="34" rx="12" ry="5" fill="#c9a56a"/><path d="M12 20 H32 V32 Q22 36 12 32Z" fill="#f4f0e4" stroke="#5a3a22" stroke-width="2"/><path d="M32 22 Q40 24 32 30" fill="none" stroke="#5a3a22" stroke-width="2"/><ellipse cx="22" cy="20" rx="10" ry="3" fill="#7a3f1d"/></svg>`;
-  }
-  if (id === "sandwich") {
-    return `<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M8 28 L24 14 L40 28 L24 34Z" fill="#e7c27a"/><path d="M10 26 L24 16 L38 26 L24 30Z" fill="#6fad4f"/><path d="M10 30 L24 20 L38 30 L24 36Z" fill="#d9a15b"/></svg>`;
-  }
-  if (id === "soup") {
-    return `<svg viewBox="0 0 48 48" aria-hidden="true"><ellipse cx="24" cy="34" rx="14" ry="6" fill="#8a5a28"/><path d="M10 22 H38 L34 34 H14Z" fill="#c45a24"/><ellipse cx="24" cy="22" rx="14" ry="5" fill="#e07a3d"/><path d="M18 12 Q20 18 16 20" fill="none" stroke="#dfe8e4" stroke-width="2"/></svg>`;
-  }
-  if (id === "pancake") {
-    return `<svg viewBox="0 0 48 48" aria-hidden="true"><ellipse cx="24" cy="30" rx="16" ry="8" fill="#e8b15a"/><path d="M10 28 Q24 10 38 28 Q24 22 10 28Z" fill="#f4c56d"/><path d="M28 16 Q34 10 36 18" fill="#c6452a"/></svg>`;
-  }
-  return `<svg viewBox="0 0 48 48" aria-hidden="true"><ellipse cx="16" cy="30" rx="8" ry="6" fill="#f0d7a0" stroke="#8a5a28" stroke-width="2"/><ellipse cx="28" cy="26" rx="8" ry="6" fill="#f0d7a0" stroke="#8a5a28" stroke-width="2"/><ellipse cx="22" cy="34" rx="8" ry="6" fill="#f0d7a0" stroke="#8a5a28" stroke-width="2"/></svg>`;
+function guestSvg(look) {
+  const skin = ["#f3c7a6", "#e0a07a", "#b56a43"][look.skin % 3];
+  const shirt = ["#2d4a7c", "#d6452a", "#2f6f5e", "#6b3f6e"][look.shirt % 4];
+  return `<svg viewBox="0 0 48 48" width="44" height="44" aria-hidden="true">
+    <circle cx="24" cy="16" r="8" fill="${skin}"/>
+    <path d="M14 28 Q24 24 34 28 L36 44 H12Z" fill="${shirt}"/>
+    <circle cx="21" cy="16" r="1.2" fill="#1b1410"/>
+    <circle cx="27" cy="16" r="1.2" fill="#1b1410"/>
+  </svg>`;
+}
+
+function pizzaSvg() {
+  return `<svg viewBox="0 0 48 48" aria-hidden="true">
+    <path d="M24 8 L42 38 H6Z" fill="#e8b15a"/>
+    <path d="M24 14 L36 34 H12Z" fill="#d6452a"/>
+    <circle cx="20" cy="26" r="2.2" fill="#8a6a3b"/>
+    <circle cx="27" cy="30" r="2.2" fill="#8a6a3b"/>
+    <circle cx="24" cy="22" r="1.8" fill="#6b5344"/>
+  </svg>`;
+}
+
+function trashSvg() {
+  return `<svg viewBox="0 0 48 48" aria-hidden="true">
+    <ellipse cx="24" cy="30" rx="12" ry="5" fill="#8a6a3b"/>
+    <path d="M16 18 L32 16 L30 32 H18Z" fill="#c9b59a"/>
+    <path d="M14 22 L20 20 L18 28Z" fill="#6b5344"/>
+  </svg>`;
 }
 
 function randomGuestLook() {
   return {
-    skin: Math.floor(Math.random() * D.SKINS.length),
-    hair: Math.floor(Math.random() * D.HAIR_STYLES.length),
-    hairColor: Math.floor(Math.random() * D.HAIR_COLORS.length),
-    shirt: Math.floor(Math.random() * D.SHIRTS.length),
-    extra: Math.random() > 0.7 ? 1 : 0,
+    skin: Math.floor(Math.random() * 3),
+    shirt: Math.floor(Math.random() * 4),
   };
 }
 
 function spawnCustomer() {
-  const menu = D.openRecipes(game.save.owned);
-  const recipe = menu[Math.floor(Math.random() * menu.length)];
-  game.customers.push({
+  const guest = {
     id: game.nextId,
     name: D.NAMES[game.nextId % D.NAMES.length],
-    recipeId: recipe.id,
     look: randomGuestLook(),
-    patience: 18000,
-    maxPatience: 18000,
-  });
-  game.nextId += 1;
+    patience: 17000,
+    maxPatience: 17000,
+  };
+  const seated = D.seatGuest(game.tables, guest);
+  if (seated.ok) game.nextId += 1;
 }
 
 function moveVector() {
@@ -164,28 +164,22 @@ function createScreen() {
   const look = game.save.look;
   stage.innerHTML = `
     <div class="sheet create">
-      <h1>Najpierw wygląd</h1>
-      <p class="lead">To git. Potem już chodzisz: podchodzisz do jedzenia, bierzesz, nosisz na ladę. Klient sam to zgarnia.</p>
-      <div class="mirror">${personSvg(look, { size: 150 })}</div>
+      <h1>Jesteś kotkiem</h1>
+      <p class="lead">Wybierz futro. Potem nosisz tylko pizzę z grzybami na stoliki. Śmieci zostają. Nie sprzątasz.</p>
+      <div class="mirror">${catSvg(look, { size: 160 })}</div>
       <div class="picks">
-        <div class="pick-row" data-key="hair">
-          ${D.HAIR_STYLES.map((name, i) => `<button type="button" class="chip ${look.hair === i ? "is-on" : ""}" data-i="${i}">${name}</button>`).join("")}
+        <div class="swatches" data-key="fur">
+          ${D.FURS.map((color, i) => `<button type="button" class="swatch ${look.fur === i ? "is-on" : ""}" data-i="${i}" style="background:${color}"></button>`).join("")}
         </div>
-        <div class="swatches" data-key="hairColor">
-          ${D.HAIR_COLORS.map((color, i) => `<button type="button" class="swatch ${look.hairColor === i ? "is-on" : ""}" data-i="${i}" style="background:${color}"></button>`).join("")}
-        </div>
-        <div class="swatches" data-key="skin">
-          ${D.SKINS.map((color, i) => `<button type="button" class="swatch ${look.skin === i ? "is-on" : ""}" data-i="${i}" style="background:${color}"></button>`).join("")}
-        </div>
-        <div class="swatches" data-key="shirt">
-          ${D.SHIRTS.map((color, i) => `<button type="button" class="swatch ${look.shirt === i ? "is-on" : ""}" data-i="${i}" style="background:${color}"></button>`).join("")}
+        <div class="pick-row" data-key="mark">
+          ${D.MARKS.map((name, i) => `<button type="button" class="chip ${look.mark === i ? "is-on" : ""}" data-i="${i}">${name}</button>`).join("")}
         </div>
         <div class="pick-row" data-key="extra">
           ${D.EXTRAS.map((name, i) => `<button type="button" class="chip ${look.extra === i ? "is-on" : ""}" data-i="${i}">${name}</button>`).join("")}
         </div>
       </div>
-      <button type="button" class="go" data-act="open-bar">Chodzę po kuchni</button>
-      <a class="side" href="labirynt/">Albo labirynt Robocika</a>
+      <button type="button" class="go" data-act="open-bar">Biegam z pizzą</button>
+      <a class="side" href="labirynt/">Robocik · labirynt</a>
     </div>
   `;
 }
@@ -193,24 +187,24 @@ function createScreen() {
 function playScreen() {
   game.mode = "play";
   deck.hidden = false;
-  const stations = D.stationsFor(game.save.owned);
+  if (game.tables.length !== D.tableCount(game.save.owned)) {
+    const old = game.tables;
+    game.tables = D.emptyTables(game.save.owned);
+    old.forEach((table, i) => {
+      if (game.tables[i]) Object.assign(game.tables[i], { guest: table.guest, pizza: table.pizza, trash: table.trash });
+    });
+  }
   stage.innerHTML = `
     <div class="sheet play">
-      <p class="how">Podejdź do jedzenia, weź je, zanieś do lady. Klient sam bierze.</p>
-      <div class="room" id="room">
-        <div class="queue" id="queue"></div>
-        <div class="counter-top" id="plates"></div>
-        ${stations
-          .map(
-            (spot) => `<div class="shelf" data-shelf="${spot.recipeId}" style="left:${spot.x}%;top:${spot.y}%">
-              ${dishSvg(spot.recipeId)}
-              <span>${spot.name}</span>
-            </div>`,
-          )
+      <p class="how">Weź pizzę z pieca. Zanieś na stolik. Klient je. Śmieci zostają.</p>
+      <div class="room is-cat" id="room">
+        <div class="oven" style="left:${D.OVEN.x}%;top:${D.OVEN.y}%">${pizzaSvg()}<span>Pizza z grzybami</span></div>
+        ${game.tables
+          .map((table) => `<div class="table" data-table="${table.id}" style="left:${table.x}%;top:${table.y}%"></div>`)
           .join("")}
-        <div class="you" id="you">${personSvg(game.save.look, { size: 72 })}<span id="carry" class="carry" hidden></span></div>
+        <div class="you" id="you">${catSvg(game.save.look, { size: 76 })}<span id="carry" class="carry" hidden></span></div>
       </div>
-      <button type="button" class="go slim" data-act="upgrades">Ulepsz bar</button>
+      <button type="button" class="go slim" data-act="upgrades">Ulepsz pizzerię</button>
     </div>
   `;
   paintRoom();
@@ -219,54 +213,39 @@ function playScreen() {
 function paintRoom() {
   const you = document.getElementById("you");
   const carry = document.getElementById("carry");
-  const queue = document.getElementById("queue");
-  const plates = document.getElementById("plates");
-  if (!you || !queue || !plates) return;
-
+  if (!you) return;
   you.style.left = `${game.player.x}%`;
   you.style.top = `${game.player.y}%`;
 
-  const near = D.closestStation(game.player.x, game.player.y, game.save.owned, 13);
-  document.querySelectorAll(".shelf").forEach((node) => {
-    node.classList.toggle("is-near", Boolean(near) && near.recipeId === node.dataset.shelf);
-  });
-  document.querySelector(".counter-top")?.classList.toggle("is-near", D.atCounter(game.player.y));
+  const ovenHot = D.atOven(game.player.x, game.player.y);
+  document.querySelector(".oven")?.classList.toggle("is-near", ovenHot);
 
-  if (game.held) {
+  game.tables.forEach((table) => {
+    const node = document.querySelector(`[data-table="${table.id}"]`);
+    if (!node) return;
+    const near = D.closestTable(game.player.x, game.player.y, [table], 14);
+    node.classList.toggle("is-near", Boolean(near));
+    node.classList.toggle("is-dirty", table.trash);
+    node.classList.toggle("is-empty", !table.guest && !table.trash);
+    const wait = table.guest ? Math.max(0, table.guest.patience / table.guest.maxPatience) : 0;
+    node.innerHTML = `
+      <span class="table-top"></span>
+      ${table.guest ? `<span class="sitter">${guestSvg(table.guest.look)}<b>${table.guest.name}</b></span>` : ""}
+      ${table.pizza ? `<span class="on-table">${pizzaSvg()}</span>` : ""}
+      ${table.trash ? `<span class="junk">${trashSvg()}</span>` : ""}
+      ${table.guest ? `<span class="wait"><i style="width:${Math.round(wait * 100)}%"></i></span>` : ""}
+    `;
+  });
+
+  if (game.held === "pizza") {
     carry.hidden = false;
-    carry.innerHTML = `${dishSvg(game.held)}`;
+    carry.innerHTML = pizzaSvg();
+    actBtn.textContent = "Pizza";
+  } else if (ovenHot) {
+    carry.hidden = true;
+    actBtn.textContent = "Weź pizzę";
   } else {
     carry.hidden = true;
-    carry.innerHTML = "";
-  }
-
-  const wanted = new Set(game.plates.map((plate) => plate.recipeId));
-  queue.innerHTML = game.customers.length
-    ? game.customers
-        .map((guest) => {
-          const recipe = D.recipeById(guest.recipeId);
-          const wait = Math.max(0, guest.patience / guest.maxPatience);
-          return `<div class="guest ${wanted.has(guest.recipeId) ? "is-ready" : ""}">
-            ${personSvg(guest.look, { size: 62, flip: true })}
-            <span class="guest-name">${guest.name}</span>
-            <span class="order">${dishSvg(recipe.id)}<b>${recipe.name}</b></span>
-            <span class="wait"><i style="width:${Math.round(wait * 100)}%"></i></span>
-          </div>`;
-        })
-        .join("")
-    : `<p class="empty">Zaraz ktoś przyjdzie.</p>`;
-
-  plates.innerHTML = game.plates.length
-    ? game.plates
-        .map((plate) => `<div class="plate">${dishSvg(plate.recipeId)}<span>${D.recipeById(plate.recipeId).name}</span></div>`)
-        .join("")
-    : `<p class="empty">Lada pusta</p>`;
-
-  if (game.held) {
-    actBtn.textContent = D.recipeById(game.held).name;
-  } else if (near) {
-    actBtn.textContent = `Weź ${near.name}`;
-  } else {
     actBtn.textContent = "Weź";
   }
 }
@@ -278,7 +257,7 @@ function upgradeScreen() {
   stage.innerHTML = `
     <div class="sheet shop">
       <h1>Ulepszenia</h1>
-      <p class="lead">Masz ${game.save.money} monet. Kup coś do baru, potem wróć i noś dalej.</p>
+      <p class="lead">Masz ${game.save.money} monet. Śmieci i tak zostają.</p>
       <div class="wares">
         ${D.UPGRADES.map((item) => {
           const check = D.canBuy(game.save, item.id);
@@ -300,43 +279,48 @@ function upgradeScreen() {
 }
 
 function openBar() {
-  game.player = { x: 50, y: 58 };
+  game.player = { x: 50, y: 50 };
   game.held = null;
-  game.plates = [];
-  game.customers = [];
-  game.spawnIn = 500;
-  game.placedOnce = false;
+  game.tables = D.emptyTables(game.save.owned);
+  game.spawnIn = 350;
+  game.placedAt = null;
+  game.eatIn = 0;
   persist();
   playScreen();
-  showToast("Podejdź, weź, zanieś do lady.");
+  showToast("Jesteś kotkiem. Tylko pizza z grzybami.");
 }
 
 function doPickup() {
-  const result = D.tryPickup(game.player.x, game.player.y, game.held, game.save.owned);
+  const result = D.tryPickup(game.player.x, game.player.y, game.held);
   if (!result.ok) {
-    if (result.reason === "full") showToast("Najpierw zanieś to na ladę");
-    else showToast("Podejdź bliżej półki");
+    if (result.reason === "full") showToast("Masz już pizzę. Na stolik.");
+    else showToast("Podejdź do pieca");
     return false;
   }
   game.held = result.held;
-  showToast(`Bierzesz: ${result.name}`);
+  showToast("Pizza z grzybami");
   return true;
 }
 
 function doPlace() {
-  const result = D.tryPlace(game.player.y, game.held, game.plates, game.save.owned);
+  const result = D.tryPlaceOnTable(game.player.x, game.player.y, game.held, game.tables);
   if (!result.ok) return false;
   game.held = result.held;
-  game.plates = result.plates;
-  showToast("Samo się kładzie na ladzie");
+  game.eatIn = 700;
+  showToast("Pizza sama ląduje na stoliku");
   return true;
 }
 
 function doAction() {
   if (game.mode !== "play") return;
+  const table = D.closestTable(game.player.x, game.player.y, game.tables, 14);
+  if (table && table.trash && !game.held) {
+    showToast("Śmieci zostają. Kotek nie sprząta.");
+    return;
+  }
   if (!game.held) doPickup();
-  else if (D.atCounter(game.player.y)) doPlace();
-  else showToast("Zanieś to do lady na górze");
+  else if (table) doPlace();
+  else showToast("Zanieś pizzę na stolik");
   paintRoom();
 }
 
@@ -358,45 +342,53 @@ function step(dt) {
   if (move.mag > 0.12) {
     const speed = D.walkSpeed(game.save.owned) * (dt / 1000);
     game.player.x = Math.max(12, Math.min(88, game.player.x + move.x * speed));
-    game.player.y = Math.max(28, Math.min(88, game.player.y + move.y * speed));
+    game.player.y = Math.max(18, Math.min(88, game.player.y + move.y * speed));
   }
 
-  if (!game.held && D.closestStation(game.player.x, game.player.y, game.save.owned, 11)) {
-    const grabbed = D.tryPickup(game.player.x, game.player.y, game.held, game.save.owned);
+  if (!game.held && D.atOven(game.player.x, game.player.y)) {
+    const grabbed = D.tryPickup(game.player.x, game.player.y, game.held);
     if (grabbed.ok) {
       game.held = grabbed.held;
-      showToast(`Bierzesz: ${grabbed.name}`);
+      showToast("Bierzesz pizzę z grzybami");
     }
   }
 
-  if (game.held && D.atCounter(game.player.y) && !game.placedOnce) {
-    if (doPlace()) game.placedOnce = true;
+  const nearTable = D.closestTable(game.player.x, game.player.y, game.tables, 13);
+  if (game.held && nearTable && game.placedAt !== nearTable.id) {
+    if (doPlace()) game.placedAt = nearTable.id;
   }
-  if (!D.atCounter(game.player.y)) game.placedOnce = false;
+  if (!nearTable) game.placedAt = null;
 
-  const taken = D.autoTake(game.plates, game.customers, game.save.owned);
-  if (taken.ok) {
-    game.plates = taken.plates;
-    game.customers = taken.customers;
-    game.save.money += taken.pay;
-    persist();
-    renderMoney();
-    showToast(`${taken.name} bierze ${taken.dish}. +${taken.pay}`);
+  if (game.eatIn > 0) {
+    game.eatIn -= dt;
+    if (game.eatIn <= 0) {
+      const eaten = D.eatAtReadyTables(game.tables, game.save.owned);
+      if (eaten.ok) {
+        game.save.money += eaten.pay;
+        persist();
+        renderMoney();
+        showToast(`${eaten.name} zjadł. Śmieci zostają. +${eaten.pay}`);
+        if (game.tables.some((table) => table.guest && table.pizza)) {
+          game.eatIn = 450;
+        }
+      }
+    }
   }
 
-  game.customers.forEach((guest) => {
-    guest.patience -= dt;
+  game.tables.forEach((table) => {
+    if (table.guest) table.guest.patience -= dt;
   });
-  const leaving = game.customers.filter((guest) => guest.patience <= 0);
-  if (leaving.length) {
-    game.customers = game.customers.filter((guest) => guest.patience > 0);
-    showToast(`${leaving[0].name} wyszedł. Za długo.`);
-  }
+  game.tables.forEach((table) => {
+    if (table.guest && table.guest.patience <= 0) {
+      showToast(`${table.guest.name} wyszedł. Bez pizzy.`);
+      table.guest = null;
+    }
+  });
 
   game.spawnIn -= dt;
-  if (game.customers.length < D.lineLimit(game.save.owned) && game.spawnIn <= 0) {
+  if (game.tables.some((table) => !table.guest) && game.spawnIn <= 0) {
     spawnCustomer();
-    game.spawnIn = 3800 + Math.random() * 2400;
+    game.spawnIn = 3200 + Math.random() * 2200;
   }
 
   paintRoom();
@@ -478,10 +470,8 @@ window.addEventListener("keydown", (event) => {
     event.preventDefault();
   }
   keys.add(key);
-  if (key === " " || key === "e") doAction();
-  if ((key === "enter" || key === " ") && (game.mode === "title" || game.mode === "create")) {
-    if (game.mode === "create" && key === "enter") openBar();
-  }
+  if ((key === " " || key === "e") && game.mode === "play") doAction();
+  if (key === "enter" && game.mode === "create") openBar();
 });
 
 window.addEventListener("keyup", (event) => {
