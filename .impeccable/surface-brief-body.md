@@ -2,18 +2,18 @@
 
 Mode: experience
 
-Audience: a child playing on a phone, or anyone with a keyboard. Job: finish three mazes as a robot.
+Audience: a child on an iPad cooking in their own stall.
 
 ## Direction contract
 
-THESIS: The game is a plastic handheld on a cutting mat. It refuses a neon cyber HUD.
+THESIS: A dusk enamel lunch window, not a cottage café.
 
-OWN-WORLD: Orange shell, green mat, cream plate, teal player, red vs white eyes.
+OWN-WORLD: Night teal, mint enamel, paprika, lemon. Paytone One + Karla.
 
-STORY: Read four rules, press Graj, jump walls, keep three lives.
+STORY: Pick a look, cook orders, spend coins on upgrades.
 
-FIRST VIEWPORT: Orange toy, rule card, stick and Skok.
+FIRST VIEWPORT: Bar Mniam sign, character sheet, Do baru.
 
-FORM: Desk toy, code-led.
+FORM: Night window, code-led.
 
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance

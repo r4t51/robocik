@@ -320,11 +320,21 @@ body {
   flex-basis: 6.4rem;
 }
 
+.shop {
+  display: flex;
+  flex-direction: column;
+  max-height: min(70dvh, 36rem);
+}
+
 .shop .wares {
   display: grid;
-  margin: 0.7rem 0 0.2rem;
-  max-height: 18rem;
+  margin: 0.7rem 0 0.55rem;
+  min-height: 0;
   overflow: auto;
+}
+
+.shop .go {
+  margin-top: 0;
 }
 
 .ware {
@@ -355,7 +365,9 @@ body {
 .toast {
   position: absolute;
   left: 50%;
-  bottom: 0.4rem;
+  top: 4.4rem;
+  bottom: auto;
+  z-index: 3;
   margin: 0;
   padding: 0.4rem 0.75rem;
   transform: translateX(-50%);

@@ -227,6 +227,7 @@ function playScreen() {
 }
 
 function upgradeScreen() {
+  toastEl.hidden = true;
   game.mode = "upgrade";
   stage.innerHTML = `
     <div class="sheet shop">
