@@ -5,7 +5,9 @@
     module.exports = api;
   }
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
-  const JAIL_MS = 3 * 60 * 1000;
+  const HAIRS = ["proste", "grzywka", "warkocz", "kucyk"];
+  const HAIR_COLORS = ["#2a1a12", "#6b3f2a", "#c45a24", "#f4d35e", "#7a2e1b"];
+  const COATS = ["#fff6e8", "#d7efe4", "#f4d35e", "#f3c7d4"];
 
   const MEDS = [
     { id: "syrup", name: "Jagodowy syrop", ailment: "Kaszel", color: "#6b2a7c", pay: 6, cost: 0, start: 2 },
@@ -39,7 +41,17 @@
   }
 
   function freshSave() {
-    return { score: 0, money: 8, jailUntil: 0, stock: starterStock() };
+    return {
+      name: "",
+      look: { hair: 0, hairColor: 1, skin: 0, coat: 0 },
+      score: 0,
+      money: 8,
+      stock: starterStock(),
+    };
+  }
+
+  function nameOk(name) {
+    return String(name || "").trim().length >= 2;
   }
 
   function unlockedMeds(stock) {
@@ -60,25 +72,6 @@
     if (!med) return 4;
     if (med.cost > 0) return Math.max(5, Math.round(med.cost / 2));
     return 4;
-  }
-
-  function jailLeft(now, jailUntil) {
-    return Math.max(0, Number(jailUntil) - Number(now));
-  }
-
-  function inJail(now, jailUntil) {
-    return jailLeft(now, jailUntil) > 0;
-  }
-
-  function lockJail(now) {
-    return Number(now) + JAIL_MS;
-  }
-
-  function jailClock(ms) {
-    const total = Math.max(0, Math.ceil(Number(ms) / 1000));
-    const min = Math.floor(total / 60);
-    const sec = total % 60;
-    return `${min}:${String(sec).padStart(2, "0")}`;
   }
 
   function emptyChairs() {
@@ -134,7 +127,7 @@
     if (!chair || !chair.guest) return { ok: false, reason: "far" };
     if (!held) return { ok: false, reason: "empty" };
     if (held !== chair.guest.need) {
-      return { ok: false, reason: "wrong", jail: true, chairId: chair.id };
+      return { ok: false, reason: "wrong", chairId: chair.id };
     }
     const med = medById(held);
     return { ok: true, reason: "", chairId: chair.id, pay: med ? med.pay : 6 };
@@ -155,13 +148,15 @@
         ...save,
         money: save.money - price,
         stock: { ...save.stock, [id]: (save.stock[id] || 0) + 1 },
-        jailUntil: save.jailUntil,
+        look: { ...save.look },
       },
     };
   }
 
   return {
-    JAIL_MS,
+    HAIRS,
+    HAIR_COLORS,
+    COATS,
     MEDS,
     CHAIRS,
     NAMES,
@@ -170,13 +165,10 @@
     medById,
     starterStock,
     freshSave,
+    nameOk,
     unlockedMeds,
     shelfSpots,
     restockCost,
-    jailLeft,
-    inJail,
-    lockJail,
-    jailClock,
     emptyChairs,
     makeGuest,
     closestSpot,

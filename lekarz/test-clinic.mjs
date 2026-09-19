@@ -7,10 +7,10 @@ function assert(condition, message) {
   if (!condition) throw new Error(message);
 }
 
-assert(data.JAIL_MS === 180000, "jail is three minutes");
-assert(data.jailClock(180000) === "3:00", "full jail clock");
-assert(data.inJail(1000, 2000), "still locked");
-assert(data.lockJail(1000) === 181000, "lock adds three minutes");
+assert(!data.nameOk(""), "empty name");
+assert(data.nameOk("Ola"), "name ok");
+assert(data.freshSave().look.coat === 0, "doctor starts with a white coat");
+assert(!("jailUntil" in data.freshSave()), "no jail in a new save");
 
 const save = data.freshSave();
 assert(save.money === 8, "start with a little cash");
@@ -25,7 +25,7 @@ const empty = data.tryTreat(22, 36, null, chairs);
 assert(empty.reason === "empty", "need a bottle in hand");
 
 const wrong = data.tryTreat(22, 36, "pill", chairs);
-assert(wrong.reason === "wrong" && wrong.jail, "wrong medicine sends you to jail");
+assert(wrong.reason === "wrong" && !wrong.jail, "wrong medicine does not send you to jail");
 
 const heal = data.tryTreat(22, 36, "syrup", chairs);
 assert(heal.ok && heal.pay === 6, "patient pays for the right medicine");

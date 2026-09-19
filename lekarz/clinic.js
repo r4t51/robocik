@@ -15,7 +15,7 @@ const actBtn = document.getElementById("act-btn");
 const SAVE_KEY = "lekarz-save";
 
 const game = {
-  mode: "play",
+  mode: "create",
   save: D.freshSave(),
   player: { x: 50, y: 58 },
   held: null,
@@ -37,9 +37,10 @@ function loadSave() {
     const fresh = D.freshSave();
     return {
       ...fresh,
+      name: String(parsed.name || ""),
+      look: { ...fresh.look, ...(parsed.look || {}) },
       score: Number(parsed.score) || 0,
       money: Number.isFinite(parsed.money) ? parsed.money : fresh.money,
-      jailUntil: Number(parsed.jailUntil) || 0,
       stock: { ...fresh.stock, ...(parsed.stock || {}) },
     };
   } catch (err) {
@@ -61,17 +62,68 @@ function renderScore() {
   scoreEl.textContent = `${game.save.money} zł · ${game.save.score}`;
 }
 
-function doctorSvg() {
-  return `<svg class="who" viewBox="0 0 64 72" width="86" height="96" aria-hidden="true">
+function doctorSvg(look, opts) {
+  const size = (opts && opts.size) || 86;
+  const hair = D.HAIR_COLORS[(look && look.hairColor) || 0] || D.HAIR_COLORS[0];
+  const skin = D.SKINS[(look && look.skin) || 0] || D.SKINS[0];
+  const coat = D.COATS[(look && look.coat) || 0] || D.COATS[0];
+  const style = (look && look.hair) || 0;
+  const bangs = style === 1 ? `<path d="M20 20 H44 V24 H20Z" fill="${hair}"/>` : "";
+  const braid = style === 2 ? `<path d="M40 28 Q48 40 42 50" fill="none" stroke="${hair}" stroke-width="4"/>` : "";
+  const tail = style === 3 ? `<path d="M42 22 Q54 18 50 32" fill="none" stroke="${hair}" stroke-width="5"/>` : "";
+  return `<svg class="who" viewBox="0 0 64 72" width="${size}" height="${Math.round(size * 1.12)}" aria-hidden="true">
     <ellipse cx="32" cy="68" rx="12" ry="3" fill="rgba(15,61,62,0.25)"/>
-    <path d="M18 40 Q32 34 46 40 L48 62 H16Z" fill="#fff6e8"/>
+    <path d="M18 40 Q32 34 46 40 L48 62 H16Z" fill="${coat}"/>
     <rect x="28" y="46" width="8" height="10" fill="#d7263d"/>
     <rect x="25" y="49" width="14" height="4" fill="#d7263d"/>
-    <circle cx="32" cy="24" r="12" fill="#e0a07a"/>
-    <path d="M20 20 Q32 8 44 20 L44 26 H20Z" fill="#2a1a12"/>
+    <circle cx="32" cy="24" r="12" fill="${skin}"/>
+    <path d="M20 20 Q32 8 44 20 L44 26 H20Z" fill="${hair}"/>
+    ${bangs}${braid}${tail}
     <circle cx="27" cy="25" r="1.5" fill="#0f3d3e"/>
     <circle cx="37" cy="25" r="1.5" fill="#0f3d3e"/>
   </svg>`;
+}
+
+function setChrome(mode) {
+  const play = mode === "play";
+  ward.classList.toggle("is-play", play);
+  deck.hidden = !play;
+  if (shopBtn) shopBtn.hidden = !play;
+  if (!play) hideShop();
+}
+
+function createScreen() {
+  game.mode = "create";
+  setChrome("create");
+  const look = game.save.look;
+  const name = String(game.save.name || "").replace(/[<>&"]/g, "");
+  stage.innerHTML = `
+    <div class="sheet create">
+      <h1>Jesteś lekarzem</h1>
+      <p class="lead">Wpisz imię i wybierz wygląd. Potem bierz lekarstwa z półek i dawaj pacjentom. Oni płacą. Złe lekarstwo po prostu nie działa.</p>
+      <label class="name-box">Imię
+        <input id="name-in" type="text" maxlength="12" value="${name}" placeholder="np. Ola" />
+      </label>
+      <div class="mirror">${doctorSvg(look, { size: 150 })}</div>
+      <div class="picks">
+        <div class="pick-row" data-key="hair">
+          ${D.HAIRS.map((label, i) => `<button type="button" class="chip ${look.hair === i ? "is-on" : ""}" data-i="${i}">${label}</button>`).join("")}
+        </div>
+        <div class="swatches" data-key="hairColor">
+          ${D.HAIR_COLORS.map((color, i) => `<button type="button" class="swatch ${look.hairColor === i ? "is-on" : ""}" data-i="${i}" style="background:${color}"></button>`).join("")}
+        </div>
+        <div class="swatches" data-key="skin">
+          ${D.SKINS.map((color, i) => `<button type="button" class="swatch ${look.skin === i ? "is-on" : ""}" data-i="${i}" style="background:${color}"></button>`).join("")}
+        </div>
+        <div class="swatches" data-key="coat">
+          ${D.COATS.map((color, i) => `<button type="button" class="swatch ${look.coat === i ? "is-on" : ""}" data-i="${i}" style="background:${color}"></button>`).join("")}
+        </div>
+      </div>
+      <button type="button" class="go" data-act="open-clinic">Idę do gabinetu</button>
+      <a class="side" href="../">Moja Planeta</a>
+      <a class="side" href="../pizza/">Pizza u Kotka</a>
+    </div>
+  `;
 }
 
 function patientSvg(look) {
@@ -112,24 +164,6 @@ function fillChairs() {
   });
 }
 
-function jailScreen() {
-  game.mode = "jail";
-  hideShop();
-  ward.classList.add("is-jail");
-  deck.hidden = true;
-  toastEl.hidden = true;
-  const left = D.jailLeft(Date.now(), game.save.jailUntil);
-  stage.innerHTML = `
-    <div class="jail">
-      <h1>Więzienie</h1>
-      <p>Podałeś złe lekarstwo. Siedzę tu 3 minuty.</p>
-      <p class="clock" id="jail-clock">${D.jailClock(left)}</p>
-      <p class="note">Zabawa. To nie prawdziwe leki.</p>
-      <a class="side" href="../">Moja Planeta</a>
-    </div>
-  `;
-}
-
 function hideShop() {
   if (shopEl) shopEl.hidden = true;
   ward.classList.remove("is-shop");
@@ -149,7 +183,7 @@ function renderShop() {
 }
 
 function openShop() {
-  if (game.mode === "jail") return;
+  if (game.mode !== "play") return;
   shopEl.hidden = false;
   ward.classList.add("is-shop");
   renderShop();
@@ -157,9 +191,8 @@ function openShop() {
 
 function playScreen() {
   game.mode = "play";
-  ward.classList.remove("is-jail");
+  setChrome("play");
   hideShop();
-  deck.hidden = false;
   fillChairs();
   const spots = D.shelfSpots(game.save.stock);
   stage.innerHTML = `
@@ -177,7 +210,7 @@ function playScreen() {
         ${game.chairs
           .map((chair) => `<div class="chair" data-chair="${chair.id}" style="left:${chair.x}%;top:${chair.y}%"></div>`)
           .join("")}
-        <div class="you" id="you">${doctorSvg()}<span class="held" id="held"></span></div>
+        <div class="you" id="you">${doctorSvg(game.save.look)}<span class="held" id="held"></span></div>
       </div>
     </div>
   `;
@@ -219,10 +252,17 @@ function paintRoom() {
   else actBtn.textContent = "A";
 }
 
-function goToJail() {
-  game.save.jailUntil = D.lockJail(Date.now());
+function openClinic() {
+  const input = document.getElementById("name-in");
+  const name = input ? input.value : game.save.name;
+  if (!D.nameOk(name)) {
+    showToast("Najpierw wpisz imię");
+    return;
+  }
+  game.save.name = name.trim();
   persist();
-  jailScreen();
+  playScreen();
+  showToast(`${game.save.name}, bierz z półki i dawaj.`);
 }
 
 function doBuy(id) {
@@ -265,8 +305,7 @@ function doAction() {
     return;
   }
   if (treat.reason === "wrong") {
-    showToast("Złe lekarstwo");
-    goToJail();
+    showToast("Złe lekarstwo. Weź inne.");
     return;
   }
   if (!treat.ok) {
@@ -306,18 +345,6 @@ function moveVector() {
 }
 
 function step(dt) {
-  if (game.mode === "jail") {
-    const left = D.jailLeft(Date.now(), game.save.jailUntil);
-    const clock = document.getElementById("jail-clock");
-    if (clock) clock.textContent = D.jailClock(left);
-    if (left <= 0) {
-      game.save.jailUntil = 0;
-      persist();
-      playScreen();
-      showToast("Wychodzę. Tym razem dobre lekarstwo.");
-    }
-    return;
-  }
   if (game.mode !== "play") return;
   if (shopEl && !shopEl.hidden) return;
   const move = moveVector();
@@ -368,6 +395,23 @@ function bindStick(el) {
   el.addEventListener("pointercancel", end);
 }
 
+stage.addEventListener("click", (event) => {
+  const btn = event.target.closest("[data-act], .chip, .swatch");
+  if (!btn) return;
+  if (btn.dataset.act === "open-clinic") {
+    openClinic();
+    return;
+  }
+  const row = btn.closest("[data-key]");
+  if (row) {
+    const input = document.getElementById("name-in");
+    if (input) game.save.name = input.value;
+    game.save.look[row.dataset.key] = Number(btn.dataset.i);
+    persist();
+    createScreen();
+  }
+});
+
 shopBtn.addEventListener("click", () => {
   if (shopEl && !shopEl.hidden) hideShop();
   else openShop();
@@ -392,6 +436,7 @@ window.addEventListener("keydown", (event) => {
   }
   keys.add(key);
   if ((key === " " || key === "e") && game.mode === "play") doAction();
+  if (key === "enter" && game.mode === "create") openClinic();
 });
 
 window.addEventListener("keyup", (event) => {
@@ -401,6 +446,10 @@ window.addEventListener("keyup", (event) => {
 bindStick(stickBase);
 game.save = loadSave();
 renderScore();
-if (D.inJail(Date.now(), game.save.jailUntil)) jailScreen();
-else playScreen();
+if (new URLSearchParams(location.search).has("play") && D.nameOk(game.save.name || "Ola")) {
+  if (!D.nameOk(game.save.name)) game.save.name = "Ola";
+  playScreen();
+} else {
+  createScreen();
+}
 requestAnimationFrame(frame);
