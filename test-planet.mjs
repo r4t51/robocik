@@ -53,8 +53,8 @@ assert(buy.ok && buy.save.money === 9 && buy.save.bag.flower === 4, "shop sells 
 const broke = data.tryBuy({ ...save, money: 1, bag: data.emptyBag() }, "tree");
 assert(broke.reason === "poor", "tree costs more than 1");
 
-assert(data.nearbyTown(380, 320).kind === "shop", "shop door");
-assert(data.nearbyTown(1040, 320).kind === "hotel", "hotel door");
+assert(data.nearbyTown(470, 520).kind === "shop", "shop door");
+assert(data.nearbyTown(800, 560).kind === "hotel", "hotel door");
 assert(data.nearbyTown(1280, 420).kind === "home", "own house");
 assert(data.nearbyTown(200, 560).kind === "guest-home", "guest house lot");
 

@@ -45,8 +45,8 @@
   const HOUSE_DOOR = { x: 1280, y: 420 };
   const HOUSE_EXIT = { x: 50, y: 86 };
   const PLAZA = { x: 640, y: 560 };
-  const SHOP = { x: 380, y: 320, name: "Sklep" };
-  const HOTEL = { x: 1040, y: 320, name: "Hotel" };
+  const SHOP = { x: 470, y: 520, name: "Sklep" };
+  const HOTEL = { x: 800, y: 560, name: "Hotel" };
   const GUEST_HOMES = [
     { x: 200, y: 560 },
     { x: 1140, y: 900 },
