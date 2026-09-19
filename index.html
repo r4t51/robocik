@@ -6,73 +6,37 @@
       name="viewport"
       content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
-    <title>Robocik · labirynt</title>
+    <title>Bar Mniam</title>
     <meta
       name="description"
-      content="Jesteś robocikiem. Przeskakuj ścianki, zbieraj monety za poziomy i kupuj ulepszenia."
+      content="Wybierz fryzurę, gotuj dla klientów i ulepszaj swój bar za zarobione monety."
     />
-    <meta name="theme-color" content="#c65a24" />
+    <meta name="theme-color" content="#14352f" />
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Rowdies:wght@400;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Karla:wght@400;700&family=Paytone+One&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <div class="desk">
-      <div class="mat" aria-hidden="true"></div>
-      <main class="toy">
-        <header class="faceplate">
-          <div class="title-row">
-            <h1>Robocik</h1>
-            <p id="coins" class="coin-chip" aria-live="polite">
-              <span class="coin-dot" aria-hidden="true"></span>
-              <span id="coin-count">0</span>
-            </p>
-          </div>
-          <div class="dials">
-            <div class="dial">
-              <span class="dial-name">Życia</span>
-              <div id="lives" class="lives" aria-live="polite"></div>
-            </div>
-            <div class="dial">
-              <span class="dial-name">Labirynt</span>
-              <p id="level-name">—</p>
-            </div>
-            <div class="dial">
-              <span class="dial-name">Gotowy</span>
-              <p id="jump-meter" class="jump-meter is-ready">SKOK</p>
-            </div>
-          </div>
+    <div class="street">
+      <main class="stall">
+        <header class="beam">
+          <div id="sign" class="sign">Bar Mniam</div>
+          <p id="wallet" class="wallet">
+            <span class="coin" aria-hidden="true"></span>
+            <span id="money">0</span>
+          </p>
         </header>
 
-        <section class="screen" aria-label="Labirynt">
-          <canvas id="arena" width="840" height="600"></canvas>
-          <p id="toast" class="toast" hidden></p>
-          <div id="overlay" class="overlay is-open"></div>
-        </section>
-
-        <section class="deck" aria-label="Sterowanie">
-          <div
-            id="stick"
-            class="stick"
-            role="application"
-            aria-label="Chodzenie. Na komputerze użyj strzałek."
-          >
-            <span id="stick-knob" class="knob"></span>
-          </div>
-          <div class="jump-wrap">
-            <button id="jump-btn" type="button">Skok</button>
-            <p>Spacja albo ten przycisk</p>
-          </div>
-        </section>
+        <section id="stage" class="stage" aria-live="polite"></section>
+        <p id="toast" class="toast" hidden></p>
       </main>
     </div>
-    <script src="maze.js"></script>
-    <script src="shop.js"></script>
-    <script src="main.js"></script>
+    <script src="data.js"></script>
+    <script src="cook.js"></script>
   </body>
 </html>
