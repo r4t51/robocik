@@ -1,0 +1,163 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-19T14:00:00Z",
+  "title": "Design System: r4t5",
+  "extensions": {
+    "colorMeta": {
+      "stock": {
+        "role": "neutral",
+        "displayName": "Film stock",
+        "canonical": "#07080c",
+        "tonalRamp": ["#07080c", "#10131a", "#1a1f2b", "#2a3142", "#465066", "#73819a", "#aeb9cc", "#f3f6fb"]
+      },
+      "ink": {
+        "role": "primary",
+        "displayName": "Lab cobalt",
+        "canonical": "#1d4ed8",
+        "tonalRamp": ["#0b1d5c", "#102a78", "#163a9a", "#1d4ed8", "#3d6ef0", "#6b97ff", "#a8c4ff", "#e7efff"]
+      },
+      "ink-deep": {
+        "role": "tertiary",
+        "displayName": "Gate blue",
+        "canonical": "#163a9a",
+        "tonalRamp": ["#081433", "#0e2260", "#12307f", "#163a9a", "#2a56c4", "#5b86e6", "#9db6f2", "#e4ecff"]
+      },
+      "edge": {
+        "role": "secondary",
+        "displayName": "Edge code",
+        "canonical": "#7eb6ff",
+        "tonalRamp": ["#163056", "#1e4478", "#2a5ea8", "#3d7ad4", "#5c97ee", "#7eb6ff", "#b7d4ff", "#f2f7ff"]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Gate white",
+        "canonical": "#f4f8ff",
+        "tonalRamp": ["#1a2438", "#2c3b58", "#455676", "#6d84a8", "#9aafcc", "#c5d4ea", "#e4ecf8", "#f4f8ff"]
+      },
+      "body": {
+        "role": "neutral",
+        "displayName": "Reading ink",
+        "canonical": "#d7e3f8",
+        "tonalRamp": ["#161d2c", "#28344a", "#3d4e6c", "#5c7396", "#8499b8", "#adbfd6", "#d7e3f8", "#f7f9fd"]
+      },
+      "quiet": {
+        "role": "neutral",
+        "displayName": "Draft ink",
+        "canonical": "#b7cff6",
+        "tonalRamp": ["#152033", "#243654", "#3a5580", "#5574a8", "#7b98c8", "#b7cff6", "#d5e4fb", "#f5f8ff"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "The name on the slate." },
+      "headline": { "displayName": "Headline", "purpose": "Chapter names." },
+      "title": { "displayName": "Title", "purpose": "Work titles." },
+      "body": { "displayName": "Body", "purpose": "Essays, held to 68ch." },
+      "label": { "displayName": "Label", "purpose": "Frame numbers only." }
+    },
+    "shadows": [],
+    "motion": [
+      {
+        "name": "frame-pull",
+        "value": "clip-path 460ms cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "The frame counter pulls up when the current reel changes. Reduced motion skips it."
+      }
+    ],
+    "breakpoints": [
+      { "name": "narrow", "value": "800px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Reel band",
+      "kind": "button",
+      "refersTo": "reel-band",
+      "description": "An outlined reel on the opening gate.",
+      "html": "<a class=\"ds-reel-band\" href=\"#films\"><strong>Films</strong><span>Tarkovsky, Wong Kar-wai, Erice</span><span class=\"ds-num\">02</span></a>",
+      "css": ".ds-reel-band { display: grid; grid-template-columns: 11rem 1fr auto; gap: 1rem 1.5rem; align-items: end; padding: 1.15rem 1rem 1.2rem; border-top: 1px solid var(--ink); border-bottom: 1px solid var(--ink); background: var(--stock); color: var(--paper); text-decoration: none; font-family: \"Big Shoulders Display\", \"Arial Narrow\", sans-serif; } .ds-reel-band strong { font-weight: 800; font-size: 3.25rem; letter-spacing: -0.02em; line-height: 0.85; } .ds-reel-band span { font-family: Literata, \"Iowan Old Style\", serif; font-size: 1rem; font-weight: 400; color: var(--quiet); letter-spacing: 0; } .ds-reel-band .ds-num { font-family: \"Martian Mono\", ui-monospace, monospace; font-size: 0.85rem; color: var(--edge); } .ds-reel-band:hover, .ds-reel-band:focus-visible { background: var(--ink); color: var(--paper); outline: 2px solid var(--edge); outline-offset: 3px; } .ds-reel-band:hover span, .ds-reel-band:focus-visible span { color: var(--paper); }"
+    },
+    {
+      "name": "Threaded reel",
+      "kind": "button",
+      "refersTo": "reel-band-threaded",
+      "description": "The reel already inked cobalt. This is the primary action.",
+      "html": "<a class=\"ds-reel-threaded\" href=\"#books\"><strong>Books</strong><span>Calvino, Le Guin, Bulgakov</span><span class=\"ds-num\">01</span></a>",
+      "css": ".ds-reel-threaded { display: grid; grid-template-columns: 11rem 1fr auto; gap: 1rem 1.5rem; align-items: end; padding: 1.15rem 1rem 1.2rem; background: var(--ink); color: var(--paper); text-decoration: none; font-family: \"Big Shoulders Display\", \"Arial Narrow\", sans-serif; } .ds-reel-threaded strong { font-weight: 800; font-size: 3.25rem; letter-spacing: -0.02em; line-height: 0.85; } .ds-reel-threaded span { font-family: Literata, \"Iowan Old Style\", serif; font-size: 1rem; color: var(--paper); } .ds-reel-threaded .ds-num { font-family: \"Martian Mono\", ui-monospace, monospace; font-size: 0.85rem; color: var(--paper); } .ds-reel-threaded:focus-visible { outline: 2px solid var(--edge); outline-offset: 3px; }"
+    },
+    {
+      "name": "Sprocket",
+      "kind": "nav",
+      "refersTo": "reel-band",
+      "description": "Frame index. The current hole is filled.",
+      "html": "<a class=\"ds-sprocket is-current\" href=\"#books\"><span class=\"ds-hole\"></span><span>Books</span><span class=\"ds-num\">01</span></a>",
+      "css": ".ds-sprocket { display: flex; flex-direction: column; align-items: center; gap: 0.45rem; color: var(--quiet); text-decoration: none; font-family: \"Big Shoulders Display\", \"Arial Narrow\", sans-serif; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; font-size: 0.8125rem; } .ds-hole { width: 1.15rem; height: 1.65rem; border: 2px solid var(--edge); border-radius: 0.28rem; } .ds-sprocket.is-current { color: var(--paper); } .ds-sprocket.is-current .ds-hole { background: var(--ink); border-color: var(--ink); } .ds-num { font-family: \"Martian Mono\", ui-monospace, monospace; font-size: 0.75rem; letter-spacing: 0; color: var(--edge); font-weight: 500; } .ds-sprocket:hover { color: var(--paper); } .ds-sprocket:focus-visible { outline: 2px solid var(--edge); outline-offset: 3px; }"
+    },
+    {
+      "name": "Work plate",
+      "kind": "custom",
+      "refersTo": "reel-band",
+      "description": "A title, an italic credit, and the essay on stock.",
+      "html": "<article class=\"ds-work\"><h3>Invisible Cities</h3><p class=\"ds-credit\">Italo Calvino, 1972</p><p>Marco Polo sits with Kublai Khan and describes cities the Khan will never visit.</p></article>",
+      "css": ".ds-work { padding: 2.75rem 0 3rem; border-top: 1px solid var(--ink-deep); color: var(--body); font-family: Literata, \"Iowan Old Style\", serif; font-size: 1.125rem; line-height: 1.6; max-width: 68ch; } .ds-work h3 { margin: 0 0 0.7rem; font-family: \"Big Shoulders Display\", \"Arial Narrow\", sans-serif; font-weight: 800; font-size: 3.4rem; letter-spacing: -0.02em; line-height: 0.9; color: var(--paper); } .ds-credit { margin: 0 0 1.25rem; font-style: italic; color: var(--edge); } .ds-work p { margin: 0; }"
+    },
+    {
+      "name": "Cobalt plate",
+      "kind": "custom",
+      "refersTo": "reel-band-threaded",
+      "description": "The middle work of a chapter, set on a full cobalt field.",
+      "html": "<article class=\"ds-plate\"><h3>The Left Hand of Darkness</h3><p class=\"ds-credit\">Ursula K. Le Guin, 1969</p><p>Genly Ai crosses the Gobrin ice with Estraven.</p></article>",
+      "css": ".ds-plate { padding: 3.5rem 6vw; background: var(--ink); color: var(--paper); font-family: Literata, \"Iowan Old Style\", serif; } .ds-plate h3 { margin: 0 0 0.7rem; font-family: \"Big Shoulders Display\", \"Arial Narrow\", sans-serif; font-weight: 800; font-size: 3.4rem; letter-spacing: -0.02em; line-height: 0.9; color: var(--paper); } .ds-plate .ds-credit { margin: 0 0 1.25rem; font-style: italic; color: #dbe7ff; } .ds-plate p { margin: 0; max-width: 68ch; font-size: 1.2rem; line-height: 1.6; }"
+    },
+    {
+      "name": "Next reel",
+      "kind": "button",
+      "refersTo": "next-reel",
+      "description": "Names the next frame at the end of a chapter.",
+      "html": "<a class=\"ds-next\" href=\"#films\">Films <span>02</span></a>",
+      "css": ".ds-next { display: inline-flex; align-items: baseline; gap: 0.8rem; color: var(--paper); text-decoration: none; font-family: \"Big Shoulders Display\", \"Arial Narrow\", sans-serif; font-weight: 800; font-size: 2.6rem; letter-spacing: -0.02em; border-bottom: 2px solid var(--ink); padding-bottom: 0.15rem; } .ds-next span { font-family: \"Martian Mono\", ui-monospace, monospace; font-size: 0.85rem; letter-spacing: 0; color: var(--edge); font-weight: 500; } .ds-next:hover, .ds-next:focus-visible { color: var(--paper); background: var(--ink); border-bottom-color: var(--ink); padding: 0.2rem 0.55rem 0.25rem; outline: 2px solid var(--edge); outline-offset: 3px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Night Leader",
+    "overview": "The shelf is a film bench at night. Black stock is the room. Cobalt is the lab lamp, and it owns whole bands, not thin highlights. A visitor threads one reel and reads. The page is a gate, a sprocket, and essays, in that order.\n\nDensity is uneven on purpose. The opening gate is one screen. A chapter is long type. A solid cobalt bar sits between chapters so the strip has a cut, not a hairline. Motion is one pull on the frame counter. Everything else is still.",
+    "keyCharacteristics": [
+      "Black ground, one cobalt, no third hue",
+      "Square gates and bands; the only curve is a sprocket hole",
+      "Display type for names, a serif for reading, mono only for frame counts",
+      "The threaded reel is a filled cobalt band",
+      "Frame numbers tell you where you are"
+    ],
+    "rules": [
+      {
+        "name": "The One Lamp Rule",
+        "body": "Cobalt is the only chromatic color. If a passage needs emphasis, it becomes a cobalt field. It does not grow a second accent.",
+        "section": "colors"
+      },
+      {
+        "name": "The Counter Rule",
+        "body": "Martian Mono appears only on frame numbers. Credits, notes, and essays stay in Literata.",
+        "section": "typography"
+      },
+      {
+        "name": "The Strip Rule",
+        "body": "Chapters are frames on one page, not separate cards. A cobalt void (7.5rem, 4.5rem on a narrow screen) is the cut between reels.",
+        "section": "layout"
+      },
+      {
+        "name": "The Flat Gate Rule",
+        "body": "Do not add drop shadows, glows, or blur to make a band feel raised. A filled cobalt rectangle is the raised state.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do keep the ground on film stock and the emphasis on lab cobalt.",
+      "Do use Big Shoulders Display for names and Literata for anything a person reads.",
+      "Do mark the current frame in the sprocket and in the live counter."
+    ],
+    "donts": [
+      "Don't introduce a third hue, a cream ground, or gray secondary text.",
+      "Don't put Martian Mono on credits, body, or labels that are not frame counts.",
+      "Don't wrap a work in a rounded card, a glass panel, or a glow.",
+      "Don't put an eyebrow label above a heading. The heading is the name."
+    ]
+  }
+}

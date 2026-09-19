@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>r4t5 · books, films, games</title>
+    <meta
+      name="description"
+      content="A working shelf by r4t5: chapters on books, films, and video games."
+    />
+    <meta name="theme-color" content="#07080c" />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,400&family=Martian+Mono:wght@500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <a class="skip" href="#books">Skip to Books</a>
+    <div class="bench">
+      <nav class="sprocket" aria-label="Reels">
+        <p class="counter" aria-live="polite">
+          <span class="visually-hidden">Current frame </span>
+          <span id="frame-num">00</span>
+        </p>
+        <a href="#slate" data-frame="00">
+          <span class="hole" aria-hidden="true"></span>
+          <span class="sprocket-name">Slate</span>
+          <span class="frame-num">00</span>
+        </a>
+        <a href="#books" data-frame="01">
+          <span class="hole" aria-hidden="true"></span>
+          <span class="sprocket-name">Books</span>
+          <span class="frame-num">01</span>
+        </a>
+        <a href="#films" data-frame="02">
+          <span class="hole" aria-hidden="true"></span>
+          <span class="sprocket-name">Films</span>
+          <span class="frame-num">02</span>
+        </a>
+        <a href="#games" data-frame="03">
+          <span class="hole" aria-hidden="true"></span>
+          <span class="sprocket-name">Games</span>
+          <span class="frame-num">03</span>
+        </a>
+      </nav>
+
+      <main>
+        <header class="gate" id="slate" data-frame="00">
+          <svg class="marks" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+            <path
+              d="M1.2 7 V1.2 H7 M93 1.2 H98.8 V7 M1.2 93 V98.8 H7 M93 98.8 H98.8 V93"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="0.45"
+              vector-effect="non-scaling-stroke"
+            />
+          </svg>
+          <div class="slate-copy">
+            <h1>r4t5</h1>
+            <p class="lede">
+              Three reels sit on this bench. Books, films, and games. Pull one
+              and read why those titles stay.
+            </p>
+            <p class="draft">
+              Working shelf. These titles are a draft, not a confirmed list.
+              Send the real ones and they replace these.
+            </p>
+          </div>
+          <nav class="bands" aria-label="Chapters">
+            <a class="band is-threaded" href="#books">
+              <strong>Books</strong>
+              <span>Calvino, Le Guin, Bulgakov</span>
+              <span class="frame-num">01</span>
+            </a>
+            <a class="band" href="#films">
+              <strong>Films</strong>
+              <span>Tarkovsky, Wong Kar-wai, Erice</span>
+              <span class="frame-num">02</span>
+            </a>
+            <a class="band" href="#games">
+              <strong>Games</strong>
+              <span>Outer Wilds, Obra Dinn, Disco Elysium</span>
+              <span class="frame-num">03</span>
+            </a>
+          </nav>
+        </header>
+
+        <section class="reel" id="books" data-frame="01">
+          <h2>Books</h2>
+          <p class="reel-open">
+            I come back to rooms I can walk through. These three have the lights on.
+          </p>
+
+          <article class="work">
+            <h3>Invisible Cities</h3>
+            <p class="credit">Italo Calvino, 1972</p>
+            <p>
+              Marco Polo sits with Kublai Khan and describes cities the Khan will
+              never visit. Thin cities. Cities of the dead. A city that is only
+              the memory of a well. Polo is talking about Venice each time, and
+              the Khan begins to hear it.
+            </p>
+            <p>
+              I keep the book for “Cities &amp; Memory.” A man rides for days and
+              arrives at the city he left, already rewritten by the story he told
+              about it.
+            </p>
+          </article>
+
+          <article class="work work-field">
+            <h3>The Left Hand of Darkness</h3>
+            <p class="credit">Ursula K. Le Guin, 1969</p>
+            <p>
+              Genly Ai is a visitor on Gethen, a winter planet where people are
+              neither men nor women for most of the month. He mistrusts Estraven,
+              the one person willing to cross the Gobrin ice with him.
+            </p>
+            <p>
+              The book is that crossing. A tent, a sledge, two people who learn
+              how to speak to each other. I open it when I want a story that
+              treats trust as work.
+            </p>
+          </article>
+
+          <article class="work">
+            <h3>The Master and Margarita</h3>
+            <p class="credit">Mikhail Bulgakov, 1967</p>
+            <p>
+              The devil walks into Moscow with a black cat and a small crew.
+              Apartments empty. A writer burns his novel. Margarita agrees to
+              host the devil’s ball so she can ask for the man she loves.
+            </p>
+            <p>
+              The Moscow chapters stay funny in a way that still bites, and the
+              ball runs long, hot, and cruel. I read those pages for a city that
+              keeps its jokes while something impossible sits at the table.
+            </p>
+          </article>
+
+          <a class="next-reel" href="#films">Films <span class="frame-num">02</span></a>
+        </section>
+
+        <div class="void" aria-hidden="true">02</div>
+
+        <section class="reel" id="films" data-frame="02">
+          <h2>Films</h2>
+          <p class="reel-open">
+            I watch films that leave a room in frame long enough to show who left it.
+          </p>
+
+          <article class="work">
+            <h3>Stalker</h3>
+            <p class="credit">Andrei Tarkovsky, 1979</p>
+            <p>
+              A guide, a writer, and a professor enter the Zone. The path is wet
+              grass, shallow water, and a tunnel they crawl. The camera stays
+              close to the ground and refuses to hurry.
+            </p>
+            <p>
+              I put it on when I have the evening. The film wants the walk.
+            </p>
+          </article>
+
+          <article class="work work-field">
+            <h3>Chungking Express</h3>
+            <p class="credit">Wong Kar-wai, 1994</p>
+            <p>
+              Two stories share a snack bar in Hong Kong. Cop 223 buys tins of
+              pineapple dated to expire. Cop 663 talks to his soap and his towel.
+              Faye slips into his flat and changes the labels while “California
+              Dreamin’” plays on repeat.
+            </p>
+            <p>
+              The second story starts at the counter where the first one ended.
+              I replay the bar for the way one small room holds two heartbreaks.
+            </p>
+          </article>
+
+          <article class="work">
+            <h3>The Spirit of the Beehive</h3>
+            <p class="credit">Víctor Erice, 1973</p>
+            <p>
+              Ana sees Frankenstein in a traveling cinema and decides the monster
+              lives in an abandoned sheepfold outside the village. Her father
+              keeps bees. Her mother writes letters. The camera stays with Ana’s
+              face while the adults move through their own quiet trouble.
+            </p>
+            <p>
+              I come back for the classroom and the well. Both are shot as if
+              the child is the only person who can see the frame.
+            </p>
+          </article>
+
+          <a class="next-reel" href="#games">Games <span class="frame-num">03</span></a>
+        </section>
+
+        <div class="void" aria-hidden="true">03</div>
+
+        <section class="reel" id="games" data-frame="03">
+          <h2>Games</h2>
+          <p class="reel-open">
+            These three want a notebook. You carry the last session into the next one.
+          </p>
+
+          <article class="work">
+            <h3>Outer Wilds</h3>
+            <p class="credit">Mobius Digital, 2019</p>
+            <p>
+              You wake beside a campfire on Timber Hearth, fly a wooden ship, and
+              read the ruins of a people who died before you arrived. The sun
+              explodes. You wake at the campfire again. The ship computer still
+              holds what you translated.
+            </p>
+            <p>
+              The ending comes when you know where to stand. I play it in long
+              sittings. A short visit only teaches the controls.
+            </p>
+          </article>
+
+          <article class="work work-field">
+            <h3>Return of the Obra Dinn</h3>
+            <p class="credit">Lucas Pope, 2018</p>
+            <p>
+              An insurance inspector boards a ship that came home with no living
+              crew. A pocket watch shows the moment each person died. You match
+              faces to names and write the cause in a book. The pictures are
+              stark. The decks are a maze.
+            </p>
+            <p>
+              A name locks, and the book accepts it. I stay with the chapter
+              where the crabs arrive. The picture gives you the answer if you
+              look at who holds the lantern.
+            </p>
+          </article>
+
+          <article class="work">
+            <h3>Disco Elysium</h3>
+            <p class="credit">ZA/UM, 2019</p>
+            <p>
+              You play a detective in Martinaise who drank his own name out of
+              his head. The skills talk. Inland Empire whispers. Authority
+              shouts. The case is a hanging behind a hostel, and the city is the
+              larger case.
+            </p>
+            <p>
+              I stay for the church on the coast and the talk with the phasmid.
+              Both treat a ruined man as someone who can still listen.
+            </p>
+          </article>
+
+          <a class="next-reel" href="#slate">Back to the slate <span class="frame-num">00</span></a>
+        </section>
+
+        <footer class="colophon">
+          <p>
+            r4t5. Working shelf, drafted September 2026. The titles and the
+            reasons are a first draft, not a confirmed list of favorites.
+            Replace them with the real shelf when you have it.
+          </p>
+        </footer>
+      </main>
+    </div>
+    <script src="main.js"></script>
+  </body>
+</html>

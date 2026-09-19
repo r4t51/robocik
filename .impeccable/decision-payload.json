@@ -1,0 +1,143 @@
+{
+  "title": "Choose the visual world",
+  "question": "The roll assigned a film-lab leader. Keep it, take an alternate, or re-roll.",
+  "options": [
+    {
+      "id": "assigned",
+      "label": "Film laboratory leader",
+      "kicker": "THE ROLL",
+      "lineage": "motion-picture leader and edge code",
+      "thesis": "The shelf is a reel you thread: books, films, and games as frames on one strip.",
+      "palette": ["#07080c", "#1d4ed8", "#d7e3f8", "#7eb6ff"],
+      "materials": ["black film stock", "cobalt lab ink", "sprocket holes"],
+      "viewport": "A full-bleed gate: r4t5 as the slate, three reel bands, the first one already inked blue.",
+      "risk": "A title sequence can bury the chapters if the reels are not the largest thing on screen.",
+      "raised": [
+        { "from": "daylight section", "raise": "One continuous strip. Chapters pin to frame numbers, not to separate cards." },
+        { "from": "cloud quarry", "raise": "A blue void sits between chapter blocks so each reel reads as a cut mass." },
+        { "from": "club sleeve", "raise": "One handwritten blue note on the slate, so the bench looks used." },
+        { "from": "drum machine", "raise": "The frame counter advances with the reading and always shows where now is." }
+      ],
+      "comp": ".impeccable/mocks/decision/assigned.webp",
+      "wireframe": {
+        "cols": 12,
+        "rows": 10,
+        "regions": [
+          { "label": "sprockets", "x": 0, "y": 0, "w": 1, "h": 10, "accent": true },
+          { "label": "slate", "x": 1, "y": 0, "w": 11, "h": 3 },
+          { "label": "books reel", "x": 1, "y": 3, "w": 11, "h": 2, "accent": true },
+          { "label": "films reel", "x": 1, "y": 5, "w": 11, "h": 2 },
+          { "label": "games reel", "x": 1, "y": 7, "w": 11, "h": 2 }
+        ]
+      }
+    },
+    {
+      "id": "model-pick",
+      "label": "Night index catalog",
+      "kicker": "IMPECCABLE’S PICK",
+      "lineage": "library card catalog",
+      "thesis": "Each work is a cobalt tab in a black drawer. You pull a card and read why it stays.",
+      "palette": ["#07080c", "#1d4ed8", "#d7e3f8"],
+      "materials": ["index cards", "cobalt tabs", "drawer front"],
+      "viewport": "Three drawer fronts. The books drawer is pulled open, cards fanned.",
+      "risk": "Also the direction most personal library sites land on.",
+      "comp": ".impeccable/mocks/decision/model-pick.webp",
+      "wireframe": {
+        "cols": 12,
+        "rows": 10,
+        "regions": [
+          { "label": "drawer books", "x": 0, "y": 1, "w": 12, "h": 3, "accent": true },
+          { "label": "drawer films", "x": 0, "y": 4, "w": 12, "h": 2 },
+          { "label": "drawer games", "x": 0, "y": 6, "w": 12, "h": 2 }
+        ]
+      }
+    },
+    {
+      "id": "challenger-patent",
+      "label": "Patent drawing sheet",
+      "verdict": "competitive",
+      "lineage": "utility patent figures",
+      "thesis": "Each favorite is a numbered figure. A leader line ties the title to the sentence that keeps it.",
+      "palette": ["#07080c", "#d7e3f8", "#1d4ed8"],
+      "materials": ["ruled ink", "leader lines", "figure numerals"],
+      "viewport": "One sheet. Fig. 1 is a book, its leader pulled taut to the claim.",
+      "case": "Holds clarity: the reason for each work is a labeled part. Loses identification: a patent is a machine, not a night shelf.",
+      "risk": "The page can feel like a diagram of taste instead of a place to read.",
+      "comp": ".impeccable/mocks/decision/challenger-patent.webp",
+      "hero": "https://impeccable.style/worlds/cards/notation-diagram-systems-patent-drawing-sheet-hero.webp",
+      "board": "https://impeccable.style/worlds/cards/notation-diagram-systems-patent-drawing-sheet.webp"
+    },
+    {
+      "id": "challenger-depot",
+      "label": "Depot destination blind",
+      "verdict": "competitive",
+      "lineage": "split-flap depot blind",
+      "thesis": "Books, films, and games are three destinations under one window. You step the blind to the reel you want.",
+      "palette": ["#07080c", "#1d4ed8", "#e7eef8"],
+      "materials": ["duck cloth", "split flap", "punched eyelet"],
+      "viewport": "One fixed window. BOOKS is stepped into place in blue on black.",
+      "case": "Holds wayfinding: three destinations, one window. Loses identification: a timetable is not a private reading bench.",
+      "risk": "The flap can shout the names and leave no room for the essays.",
+      "comp": ".impeccable/mocks/decision/challenger-depot.webp",
+      "hero": "https://impeccable.style/worlds/cards/operate-c-depot-blind-courses-hero.webp",
+      "board": "https://impeccable.style/worlds/cards/operate-c-depot-blind-courses.webp"
+    },
+    {
+      "id": "challenger-daylight",
+      "label": "Daylight section",
+      "verdict": "declined",
+      "lineage": "architectural daylight section",
+      "palette": ["#07080c", "#1d4ed8"],
+      "materials": ["section poche", "sun path"],
+      "case": "A sunbeam through rooms does not name books, films, or games, and daylight fights a night shelf.",
+      "kept": "One continuous ruled section, annotations pinned to a path.",
+      "hero": "https://impeccable.style/worlds/cards/architecture-inhabitable-space-daylight-section-hero.webp"
+    },
+    {
+      "id": "challenger-quarry",
+      "label": "Cloud quarry",
+      "verdict": "declined",
+      "lineage": "surreal cloud quarry",
+      "palette": ["#07080c", "#1d4ed8", "#d7e3f8"],
+      "materials": ["cut blocks", "blue voids"],
+      "case": "Cutting weather does not explain a personal canon, and the audience does not live in a quarry.",
+      "kept": "Deep gaps between masses, so sections breathe.",
+      "hero": "https://impeccable.style/worlds/cards/dream-surreal-impossible-worlds-cloud-quarry-hero.webp"
+    },
+    {
+      "id": "challenger-sleeve",
+      "label": "Club sleeve scrawl",
+      "verdict": "declined",
+      "lineage": "flash photograph with marker scrawl",
+      "palette": ["#07080c", "#1d4ed8", "#f4f7ff"],
+      "materials": ["crushed flash", "marker", "sticker"],
+      "case": "A 4 a.m. party photo hides the essays, and a reading visitor does not identify with the club.",
+      "kept": "One handled mark, so the surface looks used.",
+      "hero": "https://impeccable.style/worlds/cards/posters-covers-sleeves-flash-scrawl-club-sleeve-hero.webp"
+    },
+    {
+      "id": "challenger-steps",
+      "label": "Drum-machine step row",
+      "verdict": "declined",
+      "lineage": "early-80s rhythm machine",
+      "palette": ["#07080c", "#1d4ed8"],
+      "materials": ["step keys", "chase light"],
+      "case": "Sixteen steps do not map onto three essays, and a sequencer is not how this visitor reads.",
+      "kept": "A chase that always shows where now is.",
+      "hero": "https://impeccable.style/worlds/cards/signals-instruments-drum-machine-step-row-hero.webp"
+    }
+  ],
+  "reroll": { "registers": ["safer", "bolder"] },
+  "buildPath": { "value": "code", "toggle": true },
+  "canon": true,
+  "canonCard": {
+    "label": "The category standard",
+    "thesis": "A dark personal page: a name, a short intro, and three equal content blocks.",
+    "palette": ["#07080c", "#1d4ed8", "#ffffff"],
+    "materials": ["clean grid", "equal cards"],
+    "viewport": "Name at the top, three matching cards for books, films, and games.",
+    "risk": "Indistinguishable from every other dark personal site.",
+    "comp": ".impeccable/mocks/decision/canon.webp"
+  },
+  "steer": true
+}
