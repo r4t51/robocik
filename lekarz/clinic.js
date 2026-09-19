@@ -2,6 +2,10 @@ const D = window.ClinicData;
 const stage = document.getElementById("stage");
 const toastEl = document.getElementById("toast");
 const scoreEl = document.getElementById("score");
+const shopBtn = document.getElementById("shop-btn");
+const shopEl = document.getElementById("shop");
+const shopCash = document.getElementById("shop-cash");
+const shopList = document.getElementById("shop-list");
 const ward = document.getElementById("ward");
 const deck = document.getElementById("deck");
 const stickBase = document.getElementById("stick");
@@ -30,10 +34,13 @@ function loadSave() {
     const raw = localStorage.getItem(SAVE_KEY);
     if (!raw) return D.freshSave();
     const parsed = JSON.parse(raw);
+    const fresh = D.freshSave();
     return {
-      ...D.freshSave(),
+      ...fresh,
       score: Number(parsed.score) || 0,
+      money: Number.isFinite(parsed.money) ? parsed.money : fresh.money,
       jailUntil: Number(parsed.jailUntil) || 0,
+      stock: { ...fresh.stock, ...(parsed.stock || {}) },
     };
   } catch (err) {
     return D.freshSave();
@@ -51,7 +58,7 @@ function showToast(text, ms = 1400) {
 }
 
 function renderScore() {
-  scoreEl.textContent = `Wyleczeni: ${game.save.score}`;
+  scoreEl.textContent = `${game.save.money} zł · ${game.save.score}`;
 }
 
 function doctorSvg() {
@@ -88,6 +95,9 @@ function medSvg(id) {
   if (id === "salve") {
     return `<svg viewBox="0 0 40 40" aria-hidden="true"><rect x="12" y="14" width="16" height="16" fill="${color}"/><rect x="14" y="10" width="12" height="6" fill="#0f3d3e"/></svg>`;
   }
+  if (id === "plaster") {
+    return `<svg viewBox="0 0 40 40" aria-hidden="true"><rect x="6" y="15" width="28" height="10" rx="3" fill="${color}"/><rect x="16" y="17" width="8" height="6" fill="#fff6e8"/></svg>`;
+  }
   if (id === "drops") {
     return `<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 8 L28 28 H12Z" fill="${color}"/><circle cx="20" cy="30" r="4" fill="#fff6e8"/></svg>`;
   }
@@ -97,13 +107,14 @@ function medSvg(id) {
 function fillChairs() {
   game.chairs.forEach((chair) => {
     if (chair.guest) return;
-    chair.guest = D.makeGuest(game.nextGuest);
+    chair.guest = D.makeGuest(game.nextGuest, game.save.stock);
     game.nextGuest += 1;
   });
 }
 
 function jailScreen() {
   game.mode = "jail";
+  hideShop();
   ward.classList.add("is-jail");
   deck.hidden = true;
   toastEl.hidden = true;
@@ -119,18 +130,50 @@ function jailScreen() {
   `;
 }
 
+function hideShop() {
+  if (shopEl) shopEl.hidden = true;
+  ward.classList.remove("is-shop");
+}
+
+function renderShop() {
+  if (!shopEl || !shopList || !shopCash) return;
+  shopCash.textContent = `Masz ${game.save.money} zł`;
+  shopList.innerHTML = D.MEDS.map((med) => {
+    const unlocked = Number.isFinite(game.save.stock[med.id]);
+    const price = unlocked ? D.restockCost(med) : med.cost || 8;
+    const count = game.save.stock[med.id] || 0;
+    const poor = game.save.money < price;
+    const label = unlocked ? `dokup +1` : "nowe na półkę";
+    return `<button type="button" class="ware ${poor ? "is-poor" : ""}" data-act="buy" data-id="${med.id}">${medSvg(med.id)}<span>${med.name}<br><em>${med.ailment} · ${label} · masz ${count}</em></span><b>${price} zł</b></button>`;
+  }).join("");
+}
+
+function openShop() {
+  if (game.mode === "jail") return;
+  shopEl.hidden = false;
+  ward.classList.add("is-shop");
+  renderShop();
+}
+
 function playScreen() {
   game.mode = "play";
   ward.classList.remove("is-jail");
+  hideShop();
   deck.hidden = false;
   fillChairs();
+  const spots = D.shelfSpots(game.save.stock);
   stage.innerHTML = `
     <div class="arena">
       <div class="room" id="room">
-        ${D.SHELF.map((spot) => {
-          const med = D.medById(spot.id);
-          return `<div class="shelf" data-med="${spot.id}" style="left:${spot.x}%;top:${spot.y}%">${medSvg(spot.id)}<b>${med.ailment}</b></div>`;
-        }).join("")}
+        <div class="rack one"></div>
+        <div class="rack two"></div>
+        ${spots
+          .map((spot) => {
+            const med = D.medById(spot.id);
+            const count = game.save.stock[spot.id] || 0;
+            return `<div class="shelf ${count < 1 ? "is-empty" : ""}" data-med="${spot.id}" style="left:${spot.x}%;top:${spot.y}%">${medSvg(spot.id)}<b>${med.ailment}</b><em>×${count}</em></div>`;
+          })
+          .join("")}
         ${game.chairs
           .map((chair) => `<div class="chair" data-chair="${chair.id}" style="left:${chair.x}%;top:${chair.y}%"></div>`)
           .join("")}
@@ -150,9 +193,14 @@ function paintRoom() {
   const held = document.getElementById("held");
   if (held) held.innerHTML = game.held ? medSvg(game.held) : "";
 
-  const shelfHot = D.closestSpot(game.player.x, game.player.y, D.SHELF, 14);
+  const spots = D.shelfSpots(game.save.stock);
+  const shelfHot = D.closestSpot(game.player.x, game.player.y, spots, 14);
   document.querySelectorAll("[data-med]").forEach((node) => {
+    const count = game.save.stock[node.dataset.med] || 0;
     node.classList.toggle("is-near", Boolean(shelfHot) && shelfHot.id === node.dataset.med);
+    node.classList.toggle("is-empty", count < 1);
+    const tally = node.querySelector("em");
+    if (tally) tally.textContent = `×${count}`;
   });
 
   const chairHot = D.closestSpot(game.player.x, game.player.y, game.chairs, 14);
@@ -165,7 +213,8 @@ function paintRoom() {
       : "";
   });
 
-  if (shelfHot) actBtn.textContent = "Weź";
+  if (shopEl && !shopEl.hidden) actBtn.textContent = "Wychodzę";
+  else if (shelfHot) actBtn.textContent = "Weź";
   else if (chairHot && chairHot.guest) actBtn.textContent = "Daj";
   else actBtn.textContent = "A";
 }
@@ -176,14 +225,38 @@ function goToJail() {
   jailScreen();
 }
 
+function doBuy(id) {
+  const result = D.tryBuy(game.save, id);
+  if (!result.ok) {
+    showToast(result.reason === "poor" ? "Za mało złotych" : "Nie ma tego");
+    return;
+  }
+  game.save = result.save;
+  persist();
+  renderScore();
+  renderShop();
+  playScreen();
+  openShop();
+  const med = D.medById(id);
+  showToast(`Na półkę: ${med ? med.name : id}`);
+}
+
 function doAction() {
   if (game.mode !== "play") return;
-  const grab = D.tryGrab(game.player.x, game.player.y, game.held);
+  if (shopEl && !shopEl.hidden) {
+    hideShop();
+    return;
+  }
+  const grab = D.tryGrab(game.player.x, game.player.y, game.held, game.save.stock);
   if (grab.ok) {
     game.held = grab.held;
     const med = D.medById(grab.held);
     showToast(med ? med.name : "Lekarstwo");
     paintRoom();
+    return;
+  }
+  if (grab.reason === "none") {
+    showToast("Pusto. Kup w sklepie.");
     return;
   }
   const treat = D.tryTreat(game.player.x, game.player.y, game.held, game.chairs);
@@ -202,13 +275,18 @@ function doAction() {
   }
   const chair = game.chairs.find((seat) => seat.id === treat.chairId);
   const name = chair && chair.guest ? chair.guest.name : "Pacjent";
+  const pay = treat.pay || 6;
   if (chair) chair.guest = null;
+  if (game.held) {
+    game.save.stock[game.held] = Math.max(0, (game.save.stock[game.held] || 0) - 1);
+  }
   game.held = null;
   game.save.score += 1;
+  game.save.money += pay;
   persist();
   renderScore();
   fillChairs();
-  showToast(`${name} już zdrowy`);
+  showToast(`${name} płaci ${pay} zł`);
   paintRoom();
 }
 
@@ -241,6 +319,7 @@ function step(dt) {
     return;
   }
   if (game.mode !== "play") return;
+  if (shopEl && !shopEl.hidden) return;
   const move = moveVector();
   if (move.mag > 0.12) {
     if (move.x !== 0) game.facing = move.x < 0 ? -1 : 1;
@@ -288,6 +367,18 @@ function bindStick(el) {
   el.addEventListener("pointerup", end);
   el.addEventListener("pointercancel", end);
 }
+
+shopBtn.addEventListener("click", () => {
+  if (shopEl && !shopEl.hidden) hideShop();
+  else openShop();
+});
+
+shopEl?.addEventListener("click", (event) => {
+  const btn = event.target.closest("[data-act]");
+  if (!btn) return;
+  if (btn.dataset.act === "leave-shop") hideShop();
+  if (btn.dataset.act === "buy") doBuy(btn.dataset.id);
+});
 
 actBtn.addEventListener("pointerdown", (event) => {
   event.preventDefault();

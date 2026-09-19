@@ -65,9 +65,24 @@ body {
 
 .beam {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto auto;
   align-items: center;
   gap: 0.45rem;
+}
+
+.mini,
+.go {
+  font: inherit;
+  border: 0;
+  cursor: pointer;
+}
+
+.mini {
+  min-height: 2.3rem;
+  padding: 0.2rem 0.65rem;
+  background: var(--cross);
+  color: var(--cream);
+  font-family: Fredoka, "Trebuchet MS", sans-serif;
 }
 
 .sign,
@@ -106,6 +121,24 @@ body {
     repeating-linear-gradient(90deg, var(--tile) 0 28px, #d7efe4 28px 56px);
 }
 
+.rack {
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  height: 0.7rem;
+  background: #8a4a32;
+  box-shadow: 0 6px 0 rgba(15, 61, 62, 0.12);
+  z-index: 1;
+}
+
+.rack.one {
+  top: 74%;
+}
+
+.rack.two {
+  top: 90%;
+}
+
 .shelf,
 .chair,
 .you,
@@ -129,6 +162,15 @@ body {
 .chair.is-near {
   outline: 4px solid var(--cross);
   outline-offset: 3px;
+}
+
+.shelf.is-empty {
+  opacity: 0.35;
+}
+
+.shelf em {
+  font-style: normal;
+  font-size: 0.7rem;
 }
 
 .chair {
@@ -287,8 +329,73 @@ body {
   color: var(--mint);
 }
 
-.ward.is-jail .deck {
+.ward.is-jail .deck,
+.ward.is-shop .deck {
   display: none;
+}
+
+.shop-sheet {
+  position: absolute;
+  left: 0.55rem;
+  right: 0.55rem;
+  top: 4.2rem;
+  bottom: 11rem;
+  z-index: 7;
+  display: grid;
+  grid-template-rows: auto auto 1fr auto;
+  gap: 0.35rem;
+  padding: 0.7rem 0.75rem;
+  overflow: hidden;
+  background: var(--cream);
+  border: 4px solid var(--ink);
+}
+
+.shop-sheet[hidden] {
+  display: none;
+}
+
+.shop-sheet strong {
+  font-family: Fredoka, "Trebuchet MS", sans-serif;
+  font-size: 1.35rem;
+}
+
+.shop-sheet p {
+  margin: 0;
+  font-weight: 800;
+}
+
+.wares {
+  display: grid;
+  gap: 0.4rem;
+  overflow: auto;
+}
+
+.ware {
+  display: grid;
+  grid-template-columns: 2rem 1fr auto;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 3rem;
+  padding: 0.35rem 0.5rem;
+  border: 0;
+  background: var(--mint);
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.ware.is-poor {
+  background: #e8d2a8;
+}
+
+.go {
+  width: 100%;
+  min-height: 2.8rem;
+  background: var(--cross);
+  color: var(--cream);
+  font-family: Fredoka, "Trebuchet MS", sans-serif;
+  font-size: 1.15rem;
 }
 
 @media (max-width: 640px) {

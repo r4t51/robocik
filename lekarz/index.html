@@ -6,10 +6,10 @@
       name="viewport"
       content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
-    <title>Lekarz · l1</title>
+    <title>Lekarz · l2</title>
     <meta
       name="description"
-      content="Jesteś lekarzem. Podajesz specjalne lekarstwa. Złe lekarstwo = trzy minuty w więzieniu."
+      content="Jesteś lekarzem. Pacjenci płacą. Kupujesz plastry i lekarstwa na półki. Złe lekarstwo = więzienie."
     />
     <meta name="theme-color" content="#0f3d3e" />
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
@@ -19,17 +19,24 @@
       href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&family=Nunito:wght@400;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=l1" />
+    <link rel="stylesheet" href="styles.css?v=l2" />
   </head>
   <body>
     <div class="ward" id="ward">
       <main class="clinic">
         <header class="beam">
           <div id="sign" class="sign">Lekarz</div>
-          <p id="score" class="score">Wyleczeni: 0</p>
+          <p id="score" class="score">0 zł</p>
+          <button id="shop-btn" class="mini" type="button">Sklep</button>
         </header>
         <section id="stage" class="stage" aria-live="polite"></section>
         <p id="toast" class="toast" hidden></p>
+        <aside id="shop" class="shop-sheet" hidden>
+          <strong>Sklep</strong>
+          <p id="shop-cash">Masz 8 zł</p>
+          <div id="shop-list" class="wares"></div>
+          <button type="button" class="go" data-act="leave-shop">Wychodzę</button>
+        </aside>
         <section id="deck" class="deck">
           <div
             id="stick"
@@ -43,7 +50,7 @@
         </section>
       </main>
     </div>
-    <script src="data.js?v=l1"></script>
-    <script src="clinic.js?v=l1"></script>
+    <script src="data.js?v=l2"></script>
+    <script src="clinic.js?v=l2"></script>
   </body>
 </html>
