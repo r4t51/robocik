@@ -32,7 +32,8 @@ LEVELS.forEach((level, index) => {
 });
 
 const first = parseLevel(LEVELS[0].rows);
-assert(first.robots.length === 1 && first.robots[0].kind === "white", "level 1 has one white robot");
+assert(first.robots.some((robot) => robot.kind === "white"), "level 1 has a white robot");
+assert(first.robots.some((robot) => robot.kind === "red"), "level 1 has a red robot");
 assert(circleHitsWall(first.grid, 3 * TILE, 0.5 * TILE, 11), "top border wall hits");
 assert(!circleHitsWall(first.grid, first.start.x, first.start.y, 11), "player spawn is safe");
 assert(hasLineOfSight(first.grid, first.start.x, first.start.y, first.start.x + TILE, first.start.y), "open row has LOS");

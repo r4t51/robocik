@@ -127,13 +127,11 @@ function titleScreen() {
         <circle cx="32" cy="2" r="2.2" fill="#ffd166"/>
       </svg>
       <h2>Robocik</h2>
-      <p class="lead">Jesteś robocikiem. Przejdź labirynt i nie daj się złapać.</p>
+      <p class="lead">Przeskakuj ścianki.<br />Jak je dotkniesz, wracasz na start.</p>
       <ul class="rules">
-        <li><b>Skok</b> przenosi cię nad ścianką.</li>
-        <li><b>Ścianka</b> odsyła na start.</li>
-        <li><b>Czerwone oczy</b> gonią szybko.</li>
-        <li><b>Białe oczy</b> chodzą wolno.</li>
-        <li>Dotknięcie robocika zabiera życie. Masz <b>3 życia</b>.</li>
+        <li>Czerwone oczy — szybkie</li>
+        <li>Białe oczy — wolne</li>
+        <li>3 życia. Cel: zielone pole</li>
       </ul>
       <button type="button" class="go" data-act="start">Graj</button>
     </div>`,
@@ -280,6 +278,16 @@ function stepPlayer(dt) {
   const speed = PLAYER_SPEED * (player.jumpT > 0 ? 1.12 : 1);
   player.x += move.x * speed * dt;
   player.y += move.y * speed * dt;
+  if (player.jumpT <= 0 && move.mag > 0.15) {
+    const colCenter = Math.floor(player.x / TILE) * TILE + TILE / 2;
+    const rowCenter = Math.floor(player.y / TILE) * TILE + TILE / 2;
+    const pull = 240 * dt;
+    if (Math.abs(move.x) >= Math.abs(move.y)) {
+      player.y += Math.sign(rowCenter - player.y) * Math.min(Math.abs(rowCenter - player.y), pull);
+    } else {
+      player.x += Math.sign(colCenter - player.x) * Math.min(Math.abs(colCenter - player.x), pull);
+    }
+  }
   player.x = Math.max(PLAYER_RADIUS, Math.min(canvas.width - PLAYER_RADIUS, player.x));
   player.y = Math.max(PLAYER_RADIUS, Math.min(canvas.height - PLAYER_RADIUS, player.y));
 
@@ -408,15 +416,19 @@ function drawExit() {
   const pulse = 0.5 + 0.5 * Math.sin(performance.now() / 220);
   ctx.save();
   ctx.translate(x, y);
-  ctx.fillStyle = `rgba(95, 211, 141, ${0.22 + pulse * 0.2})`;
+  ctx.fillStyle = `rgba(95, 211, 141, ${0.35 + pulse * 0.25})`;
   ctx.beginPath();
-  ctx.arc(0, 0, 18, 0, Math.PI * 2);
+  ctx.roundRect(-18, -18, 36, 36, 8);
   ctx.fill();
   ctx.fillStyle = "#7bed9f";
   ctx.beginPath();
-  ctx.moveTo(-7, 4);
-  ctx.lineTo(0, -8);
-  ctx.lineTo(7, 4);
+  ctx.roundRect(-12, -12, 24, 24, 6);
+  ctx.fill();
+  ctx.fillStyle = "#103226";
+  ctx.beginPath();
+  ctx.moveTo(-6, 3);
+  ctx.lineTo(0, -7);
+  ctx.lineTo(6, 3);
   ctx.closePath();
   ctx.fill();
   ctx.restore();
@@ -480,14 +492,14 @@ function drawRobot(bot, opts) {
   if (glow) {
     ctx.fillStyle = glow;
     ctx.beginPath();
-    ctx.arc(-4, -12, 4.2, 0, Math.PI * 2);
-    ctx.arc(4, -12, 4.2, 0, Math.PI * 2);
+    ctx.arc(-4.2, -12, 5, 0, Math.PI * 2);
+    ctx.arc(4.2, -12, 5, 0, Math.PI * 2);
     ctx.fill();
   }
   ctx.fillStyle = eye;
   ctx.beginPath();
-  ctx.arc(-4, -12, 2.5, 0, Math.PI * 2);
-  ctx.arc(4, -12, 2.5, 0, Math.PI * 2);
+  ctx.arc(-4.2, -12, 3.1, 0, Math.PI * 2);
+  ctx.arc(4.2, -12, 3.1, 0, Math.PI * 2);
   ctx.fill();
 
   ctx.fillStyle = opts.tread;
@@ -641,7 +653,11 @@ overlay.addEventListener("click", (event) => {
 });
 
 bindStick(stickBase);
-titleScreen();
 renderLives();
 renderJump(true);
+if (new URLSearchParams(window.location.search).has("play")) {
+  startRun();
+} else {
+  titleScreen();
+}
 requestAnimationFrame(frame);
