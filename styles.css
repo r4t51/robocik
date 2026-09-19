@@ -346,6 +346,18 @@ body {
   pointer-events: none;
 }
 
+.you::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 0.1rem;
+  width: 2.4rem;
+  height: 0.7rem;
+  background: rgba(26, 24, 64, 0.28);
+  border-radius: 50%;
+  transform: translateX(-50%);
+}
+
 .guest {
   z-index: 3;
   display: grid;

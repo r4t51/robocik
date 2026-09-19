@@ -241,10 +241,12 @@ function camera() {
     if (land) land.style.transform = "";
     return;
   }
-  const midX = room.clientWidth / 2;
-  const midY = room.clientHeight / 2;
-  const x = Math.min(0, Math.max(room.clientWidth - D.WORLD.w, midX - game.player.x));
-  const y = Math.min(0, Math.max(room.clientHeight - D.WORLD.h, midY - game.player.y));
+  const viewW = room.clientWidth || 390;
+  const viewH = room.clientHeight || 420;
+  const midX = viewW / 2;
+  const midY = viewH / 2;
+  const x = Math.min(0, Math.max(viewW - D.WORLD.w, midX - game.player.x));
+  const y = Math.min(0, Math.max(viewH - D.WORLD.h, midY - game.player.y));
   land.style.transform = `translate(${x}px, ${y}px)`;
 }
 

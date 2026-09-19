@@ -67,7 +67,7 @@
   function freshSave() {
     return {
       name: "",
-      look: { hair: 0, hairColor: 1, skin: 0, shirt: 0 },
+      look: { hair: 0, hairColor: 1, skin: 0, shirt: 2 },
       placed: {},
       room: "out",
     };
