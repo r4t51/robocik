@@ -164,8 +164,8 @@ function createScreen() {
   const look = game.save.look;
   stage.innerHTML = `
     <div class="sheet create">
-      <h1>Kim jesteś?</h1>
-      <p class="lead">Fryzura i ciuchy są twoje. Potem chodzisz, bierzesz jedzenie i nosisz je do lady.</p>
+      <h1>Najpierw wygląd</h1>
+      <p class="lead">To git. Potem już chodzisz: podchodzisz do jedzenia, bierzesz, nosisz na ladę. Klient sam to zgarnia.</p>
       <div class="mirror">${personSvg(look, { size: 150 })}</div>
       <div class="picks">
         <div class="pick-row" data-key="hair">
@@ -184,7 +184,7 @@ function createScreen() {
           ${D.EXTRAS.map((name, i) => `<button type="button" class="chip ${look.extra === i ? "is-on" : ""}" data-i="${i}">${name}</button>`).join("")}
         </div>
       </div>
-      <button type="button" class="go" data-act="open-bar">Do baru</button>
+      <button type="button" class="go" data-act="open-bar">Chodzę po kuchni</button>
       <a class="side" href="labirynt/">Albo labirynt Robocika</a>
     </div>
   `;
