@@ -14,8 +14,9 @@ assert(data.nameOk("Ola"), "name ok");
 const save = data.freshSave();
 assert(save.room === "out", "start outside");
 assert(data.niceScore({}) === 0, "bare planet");
-assert(data.visitorCount(0) === 0, "nobody on a bare planet");
-assert(data.visitorCount(4) === 1, "one guest when it is a bit nice");
+assert(data.visitorCount(0) === 1, "Ania waits in the hotel from the start");
+assert(data.visitorCount(4) === 1, "still one guest until it is nicer");
+assert(data.visitorCount(8) === 2, "second guest when it is nicer");
 assert(data.visitorCount(12) === 3, "three guests when it is very nice");
 
 const miss = data.tryPlace(10, 10, "out", "flower", {});
@@ -80,5 +81,14 @@ assert(visit.reason === "visit", "do not plant in the hotel");
 
 assert(data.isIndoor("hotel") && data.playing("guest-1"), "hotel and guest rooms are playable");
 assert(data.indoorGuest(0, "hotel").x === 26, "guest stands in the lobby");
+
+assert(data.nearbyTown(640, 760).kind === "clinic", "clinic door");
+const clinicIn = data.tryEnterTown(640, 760, "out", {}, 1);
+assert(clinicIn.ok && clinicIn.room === "clinic", "walk into the clinic");
+const clinicOut = data.tryExit(50, 86, "clinic");
+assert(clinicOut.ok && clinicOut.room === "out", "leave the clinic");
+assert(data.folkIn("hotel").some((person) => person.name === "Zosia"), "receptionist in the hotel");
+assert(data.folkIn("clinic").some((person) => person.name === "Olek"), "doctor in the clinic");
+assert(data.playing("clinic"), "clinic is playable");
 
 console.log("planet tests passed");

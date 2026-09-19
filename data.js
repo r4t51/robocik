@@ -47,6 +47,7 @@
   const PLAZA = { x: 640, y: 560 };
   const SHOP = { x: 470, y: 520, name: "Sklep" };
   const HOTEL = { x: 800, y: 560, name: "Hotel" };
+  const CLINIC = { x: 640, y: 760, name: "Lekarz" };
   const GUEST_HOMES = [
     { x: 200, y: 560 },
     { x: 1140, y: 900 },
@@ -71,6 +72,29 @@
     { kind: "tree", x: 1420, y: 980 },
     { kind: "rock", x: 210, y: 430 },
     { kind: "flower", x: 860, y: 980 },
+  ];
+
+  const FOLK = [
+    {
+      id: "desk",
+      name: "Zosia",
+      room: "hotel",
+      x: 50,
+      y: 36,
+      look: { hair: 1, hairColor: 2, skin: 0, shirt: 3 },
+      line: "Jestem Zosia z recepcji. Ania już tu śpi. Podejdź i gadaj.",
+      again: "Jak zrobisz ładniej, przyjadą następni goście.",
+    },
+    {
+      id: "doc",
+      name: "Olek",
+      room: "clinic",
+      x: 58,
+      y: 46,
+      look: { hair: 0, hairColor: 0, skin: 1, shirtColor: "#f4f1ea" },
+      line: "Jestem Olek, lekarz. Wyglądasz zdrowo. Masz kwiatek na zdrowie.",
+      again: "Jak coś zaszwankuje, wróć tu.",
+    },
   ];
 
   const VISITORS = [
@@ -121,7 +145,17 @@
   }
 
   function playing(room) {
-    return room === "out" || room === "in" || room === "hotel" || String(room).startsWith("guest-");
+    return (
+      room === "out" ||
+      room === "in" ||
+      room === "hotel" ||
+      room === "clinic" ||
+      String(room).startsWith("guest-")
+    );
+  }
+
+  function folkIn(room) {
+    return FOLK.filter((person) => person.room === room);
   }
 
   function guestRoomIndex(room) {
@@ -148,8 +182,7 @@
   function visitorCount(nice) {
     if (nice >= 12) return 3;
     if (nice >= 8) return 2;
-    if (nice >= 4) return 1;
-    return 0;
+    return 1;
   }
 
   function dist2(ax, ay, bx, by) {
@@ -181,6 +214,7 @@
   }
 
   function indoorGuest(index, room) {
+    if (index < 0) return null;
     if (room === "hotel") return { x: 26 + index * 24, y: 50 };
     if (room === `guest-${index}`) return { x: 64, y: 48 };
     return null;
@@ -229,6 +263,7 @@
   function nearbyTown(x, y) {
     if (nearSpot(x, y, SHOP, 90)) return { kind: "shop" };
     if (nearSpot(x, y, HOTEL, 90)) return { kind: "hotel" };
+    if (nearSpot(x, y, CLINIC, 90)) return { kind: "clinic" };
     if (nearSpot(x, y, HOUSE_DOOR, 90)) return { kind: "home" };
     const index = GUEST_HOMES.findIndex((spot) => nearSpot(x, y, spot, 80));
     if (index >= 0) return { kind: "guest-home", index };
@@ -250,6 +285,7 @@
     if (town.kind === "shop") return { ok: false, reason: "shop", room };
     if (town.kind === "home") return { ok: true, reason: "", room: "in", x: 50, y: 72 };
     if (town.kind === "hotel") return { ok: true, reason: "", room: "hotel", x: 50, y: 72 };
+    if (town.kind === "clinic") return { ok: true, reason: "", room: "clinic", x: 50, y: 72 };
     if (town.kind === "guest-home") {
       if (town.index >= (guestCount || 0)) return { ok: false, reason: "empty", room };
       return { ok: true, reason: "", room: `guest-${town.index}`, x: 50, y: 72 };
@@ -270,6 +306,7 @@
     if (!nearSpot(x, y, HOUSE_EXIT, 14)) return { ok: false, reason: "far", room };
     if (room === "in") return { ok: true, reason: "", room: "out", x: 1180, y: 520 };
     if (room === "hotel") return { ok: true, reason: "", room: "out", x: HOTEL.x, y: HOTEL.y + 96 };
+    if (room === "clinic") return { ok: true, reason: "", room: "out", x: CLINIC.x, y: CLINIC.y + 90 };
     const index = guestRoomIndex(room);
     if (index >= 0 && GUEST_HOMES[index]) {
       const house = GUEST_HOMES[index];
@@ -298,14 +335,17 @@
     PLAZA,
     SHOP,
     HOTEL,
+    CLINIC,
     GUEST_HOMES,
     WARES,
     WILD,
+    FOLK,
     VISITORS,
     emptyBag,
     freshSave,
     isIndoor,
     playing,
+    folkIn,
     guestRoomIndex,
     indoorGuest,
     itemById,

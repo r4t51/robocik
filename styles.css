@@ -301,6 +301,28 @@ body {
     linear-gradient(#3d6b4f 0 16%, #d7e8c8 16%);
 }
 
+.room.is-clinic {
+  background:
+    linear-gradient(#c45a3a 0 16%, #f4f1ea 16%);
+}
+
+.furn.bench {
+  left: 28%;
+  top: 58%;
+  width: 28%;
+  height: 14%;
+  background: #7ec4d8;
+}
+
+.furn.cross {
+  left: 68%;
+  top: 30%;
+  width: 2.2rem;
+  height: 2.2rem;
+  background: #c45a3a;
+  clip-path: polygon(35% 0, 65% 0, 65% 35%, 100% 35%, 100% 65%, 65% 65%, 65% 100%, 35% 100%, 35% 65%, 0 65%, 0 35%, 35% 35%);
+}
+
 .furn {
   position: absolute;
 }
@@ -397,6 +419,7 @@ body {
 
 .shop-house span,
 .hotel span,
+.clinic-house span,
 .guest-home span {
   padding: 0.05rem 0.35rem;
   background: var(--paper);
