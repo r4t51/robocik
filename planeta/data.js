@@ -55,6 +55,7 @@
   ];
 
   const WARES = [
+    { id: "house", name: "Domek", cost: 10 },
     { id: "flower", name: "Kwiat", cost: 3 },
     { id: "tree", name: "Drzewko", cost: 5 },
     { id: "lamp", name: "Latarnia", cost: 4 },
@@ -91,54 +92,37 @@
     { kind: "flower", x: 860, y: 980 },
   ];
 
-  const FOLK = [
-    {
-      id: "desk",
-      name: "Zosia",
-      room: "hotel",
-      x: 50,
-      y: 36,
-      look: { hair: 1, hairColor: 2, skin: 0, shirt: 3 },
-      line: "Jestem Zosia z recepcji. Ania już tu śpi. Podejdź i gadaj.",
-      again: "Jak zrobisz ładniej, przyjadą następni goście.",
-    },
-    {
-      id: "doc",
-      name: "Olek",
-      room: "clinic",
-      x: 36,
-      y: 56,
-      look: { hair: 0, hairColor: 0, skin: 1, shirtColor: "#f4f1ea" },
-      line: "Tu leczysz. Bierz z półki i dawaj choremu. On płaci. Masz kwiatek na zdrowie.",
-      again: "Złe lekarstwo nic nie zrobi. Weź inne z półki.",
-    },
-  ];
+  const FOLK = [];
 
   const VISITORS = [
     {
       name: "Ania",
-      line: "Przyjechałam do hotelu. U ciebie jest tak ładnie.",
-      home: "To już mój domek. Wpadnij, jak będziesz obok.",
+      sick: "Nie mam domu. Kaszel mnie męczy.",
+      well: "Już mi lepiej. Tylko domu nie mam.",
+      home: "Dzięki za domek. Tu mieszkam.",
     },
     {
       name: "Kuba",
-      line: "Spałem w hotelu. Ta planeta jest cała twoja?",
-      home: "Mam już swój dom. Dzięki, że gadamy.",
+      sick: "Śpię pod drzewem. Katar nie daje spać.",
+      well: "Katar zszedł. Przydałby się dach.",
+      home: "Mam już swój dom. Dzięki.",
     },
     {
       name: "Maja",
-      line: "Hotel jest spoko, ale chcę swój domek.",
-      home: "Tu mieszkam. Posadź jeszcze kwiatki koło ścieżki.",
+      sick: "Nie mam gdzie spać. I swędzi mnie ręka.",
+      well: "Maść pomogła. Zbudujesz mi domek?",
+      home: "Tu mieszkam. Jest ciepło.",
     },
     {
       name: "Tomek",
-      line: "Przyszedłem, bo tu jest miło i cicho.",
-      home: "Mój domek stoi. Zapraszam na herbatę.",
+      sick: "Jestem chory. I nie mam domu.",
+      well: "Głowa już nie boli. Szukam domu.",
+      home: "Mój domek stoi. Zapraszam.",
     },
   ];
 
   function emptyBag() {
-    return { flower: 3, tree: 1, lamp: 0, rock: 1, rug: 1, pot: 0 };
+    return { house: 1, flower: 3, tree: 1, lamp: 0, rock: 1, rug: 1, pot: 0 };
   }
 
   function freshSave() {
@@ -147,10 +131,13 @@
       look: { hair: 0, hairColor: 1, skin: 0, shirt: 2 },
       placed: {},
       room: "out",
-      money: 12,
+      money: 16,
       bag: emptyBag(),
       talked: {},
       stock: starterStock(),
+      built: {},
+      homes: {},
+      healed: {},
     };
   }
 
@@ -216,13 +203,7 @@
   }
 
   function playing(room) {
-    return (
-      room === "out" ||
-      room === "in" ||
-      room === "hotel" ||
-      room === "clinic" ||
-      String(room).startsWith("guest-")
-    );
+    return room === "out" || room === "in" || String(room).startsWith("guest-");
   }
 
   function folkIn(room) {
@@ -250,10 +231,26 @@
     }, 0);
   }
 
-  function visitorCount(nice) {
-    if (nice >= 12) return 3;
-    if (nice >= 8) return 2;
-    return 1;
+  function housedCount(homes) {
+    return Object.keys(homes || {}).length;
+  }
+
+  function visitorCount(save) {
+    return Math.min(3, housedCount(save && save.homes) + 1);
+  }
+
+  function claimedLots(save) {
+    return new Set(Object.values((save && save.homes) || {}).map(Number));
+  }
+
+  function freeBuiltLot(save) {
+    return GUEST_HOMES.findIndex((_, index) => save.built[index] && !claimedLots(save).has(index));
+  }
+
+  function makeNeed(index, stock) {
+    const unlocked = unlockedMeds(stock);
+    const list = unlocked.length ? unlocked : MEDS;
+    return list[index % list.length];
   }
 
   function dist2(ax, ay, bx, by) {
@@ -286,7 +283,6 @@
 
   function indoorGuest(index, room) {
     if (index < 0) return null;
-    if (room === "hotel") return { x: 26 + index * 24, y: 50 };
     if (room === `guest-${index}`) return { x: 64, y: 48 };
     return null;
   }
@@ -329,6 +325,9 @@
           look: { ...save.look },
           placed: { ...save.placed },
           talked: { ...save.talked },
+          built: { ...(save.built || {}) },
+          homes: { ...(save.homes || {}) },
+          healed: { ...(save.healed || {}) },
         },
       };
     }
@@ -349,6 +348,41 @@
         money: save.money - price,
         bag: { ...save.bag },
         stock: { ...pack, [id]: (pack[id] || 0) + 1 },
+        look: { ...save.look },
+        placed: { ...save.placed },
+        talked: { ...save.talked },
+        built: { ...(save.built || {}) },
+        homes: { ...(save.homes || {}) },
+        healed: { ...(save.healed || {}) },
+      },
+    };
+  }
+
+  function tryHeal(held, person) {
+    if (!person) return { ok: false, reason: "far" };
+    if (!person.sick) return { ok: false, reason: "well" };
+    if (!held || !medById(held)) return { ok: false, reason: "empty" };
+    if (held !== person.need) return { ok: false, reason: "wrong" };
+    const med = medById(held);
+    return { ok: true, reason: "", pay: med ? med.pay : 6 };
+  }
+
+  function tryBuild(x, y, save) {
+    const index = GUEST_HOMES.findIndex((spot) => nearSpot(x, y, spot, 80));
+    if (index < 0) return { ok: false, reason: "far", save };
+    if (save.built && save.built[index]) return { ok: false, reason: "taken", save };
+    if ((save.bag.house || 0) < 1) return { ok: false, reason: "none", save };
+    return {
+      ok: true,
+      reason: "",
+      index,
+      save: {
+        ...save,
+        bag: { ...save.bag, house: save.bag.house - 1 },
+        built: { ...(save.built || {}), [index]: true },
+        homes: { ...(save.homes || {}) },
+        healed: { ...(save.healed || {}) },
+        stock: { ...(save.stock || starterStock()) },
         look: { ...save.look },
         placed: { ...save.placed },
         talked: { ...save.talked },
@@ -377,32 +411,29 @@
 
   function nearbyTown(x, y) {
     if (nearSpot(x, y, SHOP, 90)) return { kind: "shop" };
-    if (nearSpot(x, y, HOTEL, 90)) return { kind: "hotel" };
-    if (nearSpot(x, y, CLINIC, 90)) return { kind: "clinic" };
     if (nearSpot(x, y, HOUSE_DOOR, 90)) return { kind: "home" };
     const index = GUEST_HOMES.findIndex((spot) => nearSpot(x, y, spot, 80));
     if (index >= 0) return { kind: "guest-home", index };
     return null;
   }
 
-  function guestCamp(index, talked) {
-    if (talked && GUEST_HOMES[index]) {
-      const house = GUEST_HOMES[index];
+  function guestCamp(index, save, name) {
+    const lot = save && Number.isInteger(Number(save.homes && save.homes[name])) ? Number(save.homes[name]) : -1;
+    if (lot >= 0 && GUEST_HOMES[lot]) {
+      const house = GUEST_HOMES[lot];
       return { stay: "home", house, x: house.x - 46, y: house.y + 54 };
     }
-    return { stay: "hotel", house: null, x: HOTEL.x - 56, y: HOTEL.y + 74 };
+    return { stay: "camp", house: null, x: PLAZA.x - 40 + index * 56, y: PLAZA.y + 90 };
   }
 
-  function tryEnterTown(x, y, room, talked, guestCount) {
+  function tryEnterTown(x, y, room, built) {
     if (room !== "out") return { ok: false, reason: "inside", room };
     const town = nearbyTown(x, y);
     if (!town) return { ok: false, reason: "far", room };
     if (town.kind === "shop") return { ok: false, reason: "shop", room };
     if (town.kind === "home") return { ok: true, reason: "", room: "in", x: 50, y: 72 };
-    if (town.kind === "hotel") return { ok: true, reason: "", room: "hotel", x: 50, y: 72 };
-    if (town.kind === "clinic") return { ok: true, reason: "", room: "clinic", x: 50, y: 42 };
     if (town.kind === "guest-home") {
-      if (town.index >= (guestCount || 0)) return { ok: false, reason: "empty", room };
+      if (!built || !built[town.index]) return { ok: false, reason: "empty", room };
       return { ok: true, reason: "", room: `guest-${town.index}`, x: 50, y: 72 };
     }
     return { ok: false, reason: "far", room };
@@ -420,8 +451,6 @@
     if (!isIndoor(room)) return { ok: false, reason: "outside", room };
     if (!nearSpot(x, y, HOUSE_EXIT, 14)) return { ok: false, reason: "far", room };
     if (room === "in") return { ok: true, reason: "", room: "out", x: 1180, y: 520 };
-    if (room === "hotel") return { ok: true, reason: "", room: "out", x: HOTEL.x, y: HOTEL.y + 96 };
-    if (room === "clinic") return { ok: true, reason: "", room: "out", x: CLINIC.x, y: CLINIC.y + 90 };
     const index = guestRoomIndex(room);
     if (index >= 0 && GUEST_HOMES[index]) {
       const house = GUEST_HOMES[index];
@@ -468,6 +497,12 @@
     restockCost,
     emptyChairs,
     makeGuest,
+    makeNeed,
+    housedCount,
+    claimedLots,
+    freeBuiltLot,
+    tryHeal,
+    tryBuild,
     tryGrab,
     tryTreat,
     isIndoor,

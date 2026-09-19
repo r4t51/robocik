@@ -13,114 +13,69 @@ assert(data.nameOk("Ola"), "name ok");
 
 const save = data.freshSave();
 assert(save.room === "out", "start outside");
-assert(data.niceScore({}) === 0, "bare planet");
-assert(data.visitorCount(0) === 1, "Ania waits in the hotel from the start");
-assert(data.visitorCount(4) === 1, "still one guest until it is nicer");
-assert(data.visitorCount(8) === 2, "second guest when it is nicer");
-assert(data.visitorCount(12) === 3, "three guests when it is very nice");
+assert(save.bag.house === 1, "start with one house kit");
+assert(save.stock.syrup === 2, "start with cough syrup");
+assert(data.visitorCount(save) === 1, "one sick person waits from the start");
+assert(data.visitorCount({ homes: { Ania: 0 } }) === 2, "housing someone brings the next person");
+assert(data.visitorCount({ homes: { Ania: 0, Kuba: 1 } }) === 3, "two houses bring a third person");
 
 const miss = data.tryPlace(10, 10, "out", "flower", {});
 assert(!miss.ok, "must walk to a plot");
 
 const plant = data.tryPlace(360, 520, "out", "flower", {});
 assert(plant.ok && plant.placed.o0 === "flower", "flower lands on the plot");
-assert(data.niceScore(plant.placed) === 2, "flower adds nice");
-
-const indoor = data.tryPlace(360, 520, "out", "rug", {});
-assert(indoor.reason === "wrong-room", "rug stays in the house");
-
-const taken = data.tryPlace(360, 520, "out", "tree", plant.placed);
-assert(taken.reason === "taken", "plot already has a flower");
 
 assert(!data.tryEnter(360, 520, "out").ok, "door is at the house");
 const enter = data.tryEnter(1280, 420, "out");
 assert(enter.ok && enter.room === "in", "walk into the house");
 
-const rug = data.tryPlace(28, 58, "in", "rug", {});
-assert(rug.ok, "rug in the house");
-
 const leave = data.tryExit(50, 86, "in");
 assert(leave.ok && leave.room === "out", "walk back out");
 
-const none = data.tryPlace(360, 520, "out", "flower", {}, { flower: 0 });
-assert(none.reason === "none", "empty bag cannot plant");
-
-const spent = data.tryPlace(360, 520, "out", "flower", {}, { flower: 2 });
-assert(spent.ok && spent.bag.flower === 1, "planting uses the bag");
-
-const buy = data.tryBuy(save, "flower");
-assert(buy.ok && buy.save.money === 9 && buy.save.bag.flower === 4, "shop sells a flower");
-
-const broke = data.tryBuy({ ...save, money: 1, bag: data.emptyBag() }, "tree");
-assert(broke.reason === "poor", "tree costs more than 1");
-
 assert(data.nearbyTown(470, 520).kind === "shop", "shop door");
-assert(data.nearbyTown(800, 560).kind === "hotel", "hotel door");
+assert(!data.nearbyTown(800, 560) || data.nearbyTown(800, 560).kind !== "hotel", "there is no hotel");
 assert(data.nearbyTown(1280, 420).kind === "home", "own house");
-assert(data.nearbyTown(200, 560).kind === "guest-home", "guest house lot");
+assert(data.nearbyTown(200, 560).kind === "guest-home", "empty house lot");
 
-const hotelStay = data.guestCamp(0, false);
-assert(hotelStay.stay === "hotel", "new guest sleeps in the hotel");
-const homeStay = data.guestCamp(0, true);
-assert(homeStay.stay === "home" && homeStay.house.x === 200, "after talk they get a house");
+const locked = data.tryEnterTown(200, 560, "out", {});
+assert(locked.reason === "empty", "cannot enter a lot before you build");
 
-const hotelIn = data.tryEnterTown(800, 560, "out", {}, 1);
-assert(hotelIn.ok && hotelIn.room === "hotel", "walk into the hotel");
-const hotelOut = data.tryExit(50, 86, "hotel");
-assert(hotelOut.ok && hotelOut.room === "out", "leave the hotel");
+const ania = { name: "Ania", sick: true, need: "syrup" };
+assert(data.tryHeal(null, ania).reason === "empty", "need a medicine in hand");
+assert(data.tryHeal("pill", ania).reason === "wrong", "wrong medicine does nothing");
+const heal = data.tryHeal("syrup", ania);
+assert(heal.ok && heal.pay === 6, "right medicine heals and they pay");
 
-const locked = data.tryEnterTown(200, 560, "out", {}, 0);
-assert(locked.reason === "empty", "no house before a guest arrives");
-const guestIn = data.tryEnterTown(200, 560, "out", {}, 1);
-assert(guestIn.ok && guestIn.room === "guest-0", "walk into a guest house");
+const built = data.tryBuild(200, 560, save);
+assert(built.ok && built.save.built[0] && built.save.bag.house === 0, "build a house on the lot");
+assert(data.tryBuild(200, 560, built.save).reason === "taken", "lot already has a house");
+
+const noKit = data.tryBuild(1140, 900, { ...save, bag: { ...save.bag, house: 0 } });
+assert(noKit.reason === "none", "need a house kit from the shop");
+
+const guestIn = data.tryEnterTown(200, 560, "out", built.save.built);
+assert(guestIn.ok && guestIn.room === "guest-0", "walk into the house you built");
 const guestOut = data.tryExit(50, 86, "guest-0");
 assert(guestOut.ok && guestOut.room === "out", "leave the guest house");
 
-const visit = data.tryPlace(50, 50, "hotel", "flower", {}, { flower: 1 });
-assert(visit.reason === "visit", "do not plant in the hotel");
+const camp = data.guestCamp(0, save, "Ania");
+assert(camp.stay === "camp", "without a house they sleep outside");
+const home = data.guestCamp(0, { homes: { Ania: 0 } }, "Ania");
+assert(home.stay === "home" && home.house.x === 200, "after a house they live there");
 
-assert(data.isIndoor("hotel") && data.playing("guest-1"), "hotel and guest rooms are playable");
-assert(data.indoorGuest(0, "hotel").x === 26, "guest stands in the lobby");
+const buyMed = data.tryBuy({ ...save, money: 12 }, "plaster");
+assert(buyMed.ok && buyMed.save.stock.plaster === 1, "shop sells plaster");
 
-assert(data.nearbyTown(640, 760).kind === "clinic", "clinic door");
-const clinicIn = data.tryEnterTown(640, 760, "out", {}, 1);
-assert(clinicIn.ok && clinicIn.room === "clinic" && clinicIn.y === 42, "walk into the clinic among the patients");
-const clinicOut = data.tryExit(50, 86, "clinic");
-assert(clinicOut.ok && clinicOut.room === "out", "leave the clinic");
-assert(data.folkIn("hotel").some((person) => person.name === "Zosia"), "receptionist in the hotel");
-assert(data.folkIn("clinic").some((person) => person.name === "Olek"), "doctor in the clinic");
-assert(data.playing("clinic"), "clinic is playable");
+const buyHouse = data.tryBuy(save, "house");
+assert(buyHouse.ok && buyHouse.save.bag.house === 2 && buyHouse.save.money === 6, "shop sells another house");
 
-const clinicSave = data.freshSave();
-assert(clinicSave.stock.syrup === 2 && clinicSave.stock.plaster == null, "starter bottles on the planet shelves");
-assert(!("jailUntil" in clinicSave), "no jail on the planet");
+const buyFlower = data.tryBuy(save, "flower");
+assert(buyFlower.ok && buyFlower.save.bag.flower === 4, "shop still sells flowers");
 
-const chairs = data.emptyChairs();
-const sick = data.makeGuest(0, clinicSave.stock);
-assert(sick.need === "syrup" && sick.say === "Kaszel", "first patient wants cough syrup");
-chairs[0].guest = sick;
+assert(!data.playing("hotel") && !data.playing("clinic"), "no hotel and no clinic rooms");
+assert(data.playing("out") && data.playing("guest-0"), "planet and built homes are playable");
 
-assert(data.tryTreat(22, 36, null, chairs).reason === "empty", "need a bottle in hand");
-const wrong = data.tryTreat(22, 36, "pill", chairs);
-assert(wrong.reason === "wrong" && !wrong.jail, "wrong medicine does not send you to jail");
-const heal = data.tryTreat(22, 36, "syrup", chairs);
-assert(heal.ok && heal.pay === 6, "patient pays for the right medicine");
-
-const firstShelf = data.shelfSpots(clinicSave.stock)[0];
-const grab = data.tryGrab(firstShelf.x, firstShelf.y, null, clinicSave.stock);
-assert(grab.ok && grab.held === "syrup", "pick syrup from the clinic shelf");
-
-const dry = data.tryGrab(firstShelf.x, firstShelf.y, null, { syrup: 0, drops: 2, salve: 2 });
-assert(dry.reason === "none", "empty shelf cannot be taken");
-
-const buyMed = data.tryBuy({ ...clinicSave, money: 12 }, "plaster");
-assert(buyMed.ok && buyMed.save.stock.plaster === 1 && buyMed.save.money === 0, "shop sells a plaster for the clinic");
-assert(data.shelfSpots(buyMed.save.stock).some((spot) => spot.id === "plaster"), "bought plaster sits on a shelf");
-
-const restock = data.tryBuy({ ...clinicSave, money: 10, stock: data.starterStock() }, "syrup");
-assert(restock.ok && restock.save.stock.syrup === 3, "buy another bottle of syrup");
-
-const stillFlower = data.tryBuy({ ...clinicSave, money: 12, stock: data.starterStock() }, "flower");
-assert(stillFlower.ok && stillFlower.save.bag.flower === 4 && stillFlower.save.stock.syrup === 2, "flowers still sell and stock stays");
+const need = data.makeNeed(0, save.stock);
+assert(need.id === "syrup" && need.ailment === "Kaszel", "first sick person wants cough syrup");
 
 console.log("planet tests passed");

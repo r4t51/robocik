@@ -575,6 +575,19 @@ body {
   font-size: 0.7rem;
 }
 
+.guest.is-sick b {
+  background: #c45a3a;
+  color: var(--paper);
+}
+
+.guest-lot .lot-pad {
+  width: 3.2rem;
+  height: 1.8rem;
+  background: #b08958;
+  border-radius: 50%;
+  box-shadow: inset 0 2px 0 rgba(42, 26, 18, 0.18);
+}
+
 .door {
   padding: 0.35rem 0.6rem;
   background: var(--ink);
