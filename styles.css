@@ -77,12 +77,13 @@ body {
 }
 
 .sign {
+  min-width: 0;
   margin: 0;
-  padding: 0.35rem 0.75rem 0.2rem;
+  padding: 0.35rem 0.55rem 0.2rem;
   background: var(--milk);
   color: var(--sauce);
   font-family: "Archivo Black", "Trebuchet MS", sans-serif;
-  font-size: clamp(1.05rem, 4.6vw, 1.85rem);
+  font-size: clamp(0.95rem, 4.2vw, 1.7rem);
   line-height: 0.95;
   letter-spacing: -0.02em;
   box-shadow: 0 10px 0 var(--lino-deep);
