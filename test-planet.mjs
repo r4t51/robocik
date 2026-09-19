@@ -21,18 +21,18 @@ assert(data.visitorCount(12) === 3, "three guests when it is very nice");
 const miss = data.tryPlace(10, 10, "out", "flower", {});
 assert(!miss.ok, "must walk to a plot");
 
-const plant = data.tryPlace(22, 38, "out", "flower", {});
+const plant = data.tryPlace(360, 520, "out", "flower", {});
 assert(plant.ok && plant.placed.o0 === "flower", "flower lands on the plot");
 assert(data.niceScore(plant.placed) === 2, "flower adds nice");
 
-const indoor = data.tryPlace(22, 38, "out", "rug", {});
+const indoor = data.tryPlace(360, 520, "out", "rug", {});
 assert(indoor.reason === "wrong-room", "rug stays in the house");
 
-const taken = data.tryPlace(22, 38, "out", "tree", plant.placed);
+const taken = data.tryPlace(360, 520, "out", "tree", plant.placed);
 assert(taken.reason === "taken", "plot already has a flower");
 
-assert(!data.tryEnter(22, 38, "out").ok, "door is at the house");
-const enter = data.tryEnter(80, 40, "out");
+assert(!data.tryEnter(360, 520, "out").ok, "door is at the house");
+const enter = data.tryEnter(1280, 420, "out");
 assert(enter.ok && enter.room === "in", "walk into the house");
 
 const rug = data.tryPlace(28, 58, "in", "rug", {});

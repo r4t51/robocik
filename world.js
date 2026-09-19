@@ -1,6 +1,9 @@
 const D = window.PlanetData;
 const stage = document.getElementById("stage");
 const toastEl = document.getElementById("toast");
+const talkEl = document.getElementById("talk");
+const talkName = document.getElementById("talk-name");
+const talkLine = document.getElementById("talk-line");
 const niceEl = document.getElementById("nice");
 const space = document.getElementById("space");
 const dock = document.getElementById("dock");
@@ -14,13 +17,12 @@ const SAVE_KEY = "planeta-dom-save";
 const game = {
   mode: "create",
   save: D.freshSave(),
-  player: { x: 46, y: 58 },
+  player: { x: D.START.x, y: D.START.y },
   held: "flower",
   visitors: [],
   toastUntil: 0,
   last: 0,
-  placedAt: null,
-  enteredAt: false,
+  facing: 1,
 };
 
 const keys = new Set();
@@ -50,6 +52,17 @@ function showToast(text, ms = 1400) {
   toastEl.textContent = text;
   toastEl.hidden = false;
   game.toastUntil = performance.now() + ms;
+}
+
+function hideTalk() {
+  talkEl.hidden = true;
+}
+
+function showTalk(name, line) {
+  talkName.textContent = name;
+  talkLine.textContent = line;
+  talkEl.hidden = false;
+  toastEl.hidden = true;
 }
 
 function renderNice() {
@@ -110,6 +123,7 @@ function setChrome(mode) {
   space.classList.toggle("is-play", play);
   deck.hidden = !play;
   dock.hidden = !play;
+  if (!play) hideTalk();
 }
 
 function createScreen() {
@@ -160,9 +174,9 @@ function syncVisitors() {
         skin: game.visitors.length % D.SKINS.length,
         shirt: (game.visitors.length + 1) % D.SHIRTS.length,
       },
-      x: 30 + game.visitors.length * 16,
-      y: 44 + (game.visitors.length % 2) * 10,
-      vx: 8 + game.visitors.length * 2,
+      x: D.PLAZA.x + game.visitors.length * 90,
+      y: D.PLAZA.y + (game.visitors.length % 2) * 50,
+      vx: 28 + game.visitors.length * 8,
     });
   }
   if (game.visitors.length > want) game.visitors = game.visitors.slice(0, want);
@@ -175,28 +189,39 @@ function syncVisitors() {
 function playScreen() {
   game.mode = game.save.room;
   setChrome(game.save.room);
+  hideTalk();
   const indoor = game.save.room === "in";
   const spots = D.spotsFor(game.save.room);
   const items = D.itemsFor(game.save.room);
   if (!items.some((item) => item.id === game.held)) game.held = items[0].id;
 
+  const wild = indoor
+    ? ""
+    : D.WILD.map(
+        (bit) =>
+          `<div class="wild" style="left:${bit.x}px;top:${bit.y}px">${decorSvg(bit.kind)}</div>`
+      ).join("");
+
   stage.innerHTML = `
     <div class="arena">
       <div class="room ${indoor ? "is-home" : "is-planet"}" id="room">
-        ${
-          indoor
-            ? `<div class="door" style="left:${D.HOUSE_EXIT.x}%;top:${D.HOUSE_EXIT.y}%"><span>Wyjście</span></div>`
-            : `<div class="house" style="left:${D.HOUSE_DOOR.x}%;top:${D.HOUSE_DOOR.y}%">${houseSvg()}<span>Domek</span></div>`
-        }
-        ${spots
-          .map((spot) => `<div class="plot" data-plot="${spot.id}" style="left:${spot.x}%;top:${spot.y}%"></div>`)
-          .join("")}
-        ${
-          indoor
-            ? ""
-            : `<div id="guests"></div>`
-        }
-        <div class="you" id="you">${personSvg(game.save.look, { size: 78 })}</div>
+        <div class="land" id="land" style="${indoor ? "" : `width:${D.WORLD.w}px;height:${D.WORLD.h}px`}">
+          ${indoor ? "" : `<div class="path"></div><div class="pond"></div>`}
+          ${
+            indoor
+              ? `<div class="door" style="left:${D.HOUSE_EXIT.x}%;top:${D.HOUSE_EXIT.y}%"><span>Wyjście</span></div>`
+              : `<div class="house" style="left:${D.HOUSE_DOOR.x}px;top:${D.HOUSE_DOOR.y}px">${houseSvg()}<span>Domek</span></div>`
+          }
+          ${spots
+            .map(
+              (spot) =>
+                `<div class="plot" data-plot="${spot.id}" style="left:${indoor ? spot.x + "%" : spot.x + "px"};top:${indoor ? spot.y + "%" : spot.y + "px"}"></div>`
+            )
+            .join("")}
+          ${wild}
+          ${indoor ? "" : `<div id="guests"></div>`}
+          <div class="you" id="you">${personSvg(game.save.look, { size: 86 })}</div>
+        </div>
       </div>
     </div>
   `;
@@ -209,21 +234,38 @@ function playScreen() {
   paintRoom();
 }
 
+function camera() {
+  const room = document.getElementById("room");
+  const land = document.getElementById("land");
+  if (!room || !land || game.save.room === "in") {
+    if (land) land.style.transform = "";
+    return;
+  }
+  const midX = room.clientWidth / 2;
+  const midY = room.clientHeight / 2;
+  const x = Math.min(0, Math.max(room.clientWidth - D.WORLD.w, midX - game.player.x));
+  const y = Math.min(0, Math.max(room.clientHeight - D.WORLD.h, midY - game.player.y));
+  land.style.transform = `translate(${x}px, ${y}px)`;
+}
+
 function paintRoom() {
   const you = document.getElementById("you");
   if (!you) return;
-  you.style.left = `${game.player.x}%`;
-  you.style.top = `${game.player.y}%`;
-
   const indoor = game.save.room === "in";
+  you.style.left = indoor ? `${game.player.x}%` : `${game.player.x}px`;
+  you.style.top = indoor ? `${game.player.y}%` : `${game.player.y}px`;
+  you.style.transform = `translate(-50%, -60%) scaleX(${game.facing})`;
+  camera();
+
   const doorHot = D.atDoor(game.player.x, game.player.y, game.save.room);
   document.querySelector(".house")?.classList.toggle("is-near", !indoor && doorHot);
   document.querySelector(".door")?.classList.toggle("is-near", indoor && doorHot);
 
+  const range = indoor ? 13 : 80;
   D.spotsFor(game.save.room).forEach((spot) => {
     const node = document.querySelector(`[data-plot="${spot.id}"]`);
     if (!node) return;
-    const near = D.closestSpot(game.player.x, game.player.y, [spot], 13);
+    const near = D.closestSpot(game.player.x, game.player.y, [spot], range);
     const item = game.save.placed[spot.id];
     node.classList.toggle("is-near", Boolean(near) && !item);
     node.classList.toggle("is-full", Boolean(item));
@@ -235,15 +277,22 @@ function paintRoom() {
     guests.innerHTML = game.visitors
       .map(
         (guest) =>
-          `<div class="guest" style="left:${guest.x}%;top:${guest.y}%">${personSvg(guest.look, { size: 56 })}<b>${guest.name}</b></div>`
+          `<div class="guest" style="left:${guest.x}px;top:${guest.y}px">${personSvg(guest.look, { size: 72 })}<b>${guest.name}</b></div>`
       )
       .join("");
   }
 
-  if (doorHot) actBtn.textContent = indoor ? "Wychodzę" : "Do domku";
-  else if (D.closestSpot(game.player.x, game.player.y, D.spotsFor(game.save.room), 13)) {
-    actBtn.textContent = "Stawiam";
-  } else actBtn.textContent = "Idę";
+  const nearGuest = nearbyGuest();
+  const nearPlot = D.closestSpot(game.player.x, game.player.y, D.spotsFor(game.save.room), range);
+  if (doorHot) actBtn.textContent = indoor ? "Wychodzę" : "Wejdź";
+  else if (nearGuest) actBtn.textContent = "Gadam";
+  else if (nearPlot && !game.save.placed[nearPlot.id]) actBtn.textContent = "Sadzę";
+  else actBtn.textContent = "A";
+}
+
+function nearbyGuest() {
+  if (game.save.room !== "out") return null;
+  return game.visitors.find((guest) => D.closestSpot(game.player.x, game.player.y, [guest], 70)) || null;
 }
 
 function openWorld() {
@@ -255,11 +304,11 @@ function openWorld() {
   }
   game.save.name = name.trim();
   game.save.room = "out";
-  game.player = { x: 46, y: 58 };
+  game.player = { x: D.START.x, y: D.START.y };
   persist();
   syncVisitors();
   playScreen();
-  showToast(`${game.save.name}, to twoja planeta.`);
+  showToast(`${game.save.name}, idź, sadź i gadaj z gośćmi.`);
 }
 
 function doPlace() {
@@ -303,13 +352,17 @@ function doDoor() {
 
 function doAction() {
   if (game.mode !== "out" && game.mode !== "in") return;
+  if (!talkEl.hidden) {
+    hideTalk();
+    return;
+  }
   if (D.atDoor(game.player.x, game.player.y, game.save.room)) {
     doDoor();
     return;
   }
-  const near = game.visitors.find((guest) => D.closestSpot(game.player.x, game.player.y, [guest], 12));
-  if (near && game.save.room === "out") {
-    showToast(`${near.name}: ${near.line}`);
+  const near = nearbyGuest();
+  if (near) {
+    showTalk(near.name, near.line);
     return;
   }
   doPlace();
@@ -335,25 +388,23 @@ function step(dt) {
   if (game.mode !== "out" && game.mode !== "in") return;
   const move = moveVector();
   if (move.mag > 0.12) {
-    const speed = 42 * (dt / 1000);
-    game.player.x = Math.max(12, Math.min(88, game.player.x + move.x * speed));
-    game.player.y = Math.max(22, Math.min(86, game.player.y + move.y * speed));
+    hideTalk();
+    if (move.x !== 0) game.facing = move.x < 0 ? -1 : 1;
+    const indoor = game.save.room === "in";
+    const speed = (indoor ? 46 : 210) * (dt / 1000);
+    if (indoor) {
+      game.player.x = Math.max(14, Math.min(86, game.player.x + move.x * speed));
+      game.player.y = Math.max(28, Math.min(86, game.player.y + move.y * speed));
+    } else {
+      game.player.x = Math.max(80, Math.min(D.WORLD.w - 80, game.player.x + move.x * speed));
+      game.player.y = Math.max(80, Math.min(D.WORLD.h - 80, game.player.y + move.y * speed));
+    }
   }
-
-  if (D.atDoor(game.player.x, game.player.y, game.save.room)) {
-    if (!game.enteredAt && doDoor()) game.enteredAt = true;
-  } else game.enteredAt = false;
-
-  const nearPlot = D.closestSpot(game.player.x, game.player.y, D.spotsFor(game.save.room), 12);
-  if (nearPlot && !game.save.placed[nearPlot.id] && game.placedAt !== nearPlot.id) {
-    if (doPlace()) game.placedAt = nearPlot.id;
-  }
-  if (!nearPlot) game.placedAt = null;
 
   if (game.save.room === "out") {
     game.visitors.forEach((guest) => {
       guest.x += (guest.vx * dt) / 1000;
-      if (guest.x > 78 || guest.x < 18) guest.vx *= -1;
+      if (guest.x > 1100 || guest.x < 220) guest.vx *= -1;
     });
   }
 
@@ -421,6 +472,8 @@ dock.addEventListener("click", (event) => {
   game.held = btn.dataset.id;
   dock.querySelectorAll(".dish").forEach((node) => node.classList.toggle("is-on", node.dataset.id === game.held));
 });
+
+talkEl.addEventListener("click", hideTalk);
 
 actBtn.addEventListener("pointerdown", (event) => {
   event.preventDefault();

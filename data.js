@@ -10,6 +10,9 @@
   const SKINS = ["#f3c7a6", "#e0a07a", "#b56a43"];
   const SHIRTS = ["#3d6b4f", "#c45a3a", "#2d4a7c", "#d4a017"];
 
+  const WORLD = { w: 1600, h: 1200 };
+  const START = { x: 620, y: 640 };
+
   const OUT_ITEMS = [
     { id: "flower", name: "Kwiat", nice: 2 },
     { id: "tree", name: "Drzewko", nice: 3 },
@@ -23,12 +26,14 @@
   ];
 
   const OUT_SPOTS = [
-    { id: "o0", x: 22, y: 38 },
-    { id: "o1", x: 40, y: 52 },
-    { id: "o2", x: 58, y: 36 },
-    { id: "o3", x: 28, y: 70 },
-    { id: "o4", x: 52, y: 72 },
-    { id: "o5", x: 70, y: 64 },
+    { id: "o0", x: 360, y: 520 },
+    { id: "o1", x: 520, y: 700 },
+    { id: "o2", x: 740, y: 480 },
+    { id: "o3", x: 420, y: 880 },
+    { id: "o4", x: 780, y: 860 },
+    { id: "o5", x: 980, y: 640 },
+    { id: "o6", x: 240, y: 740 },
+    { id: "o7", x: 880, y: 360 },
   ];
 
   const IN_SPOTS = [
@@ -37,14 +42,26 @@
     { id: "i2", x: 72, y: 60 },
   ];
 
-  const HOUSE_DOOR = { x: 80, y: 40 };
+  const HOUSE_DOOR = { x: 1280, y: 420 };
   const HOUSE_EXIT = { x: 50, y: 86 };
+  const PLAZA = { x: 640, y: 560 };
+
+  const WILD = [
+    { kind: "tree", x: 180, y: 280 },
+    { kind: "tree", x: 300, y: 220 },
+    { kind: "tree", x: 980, y: 240 },
+    { kind: "tree", x: 1480, y: 260 },
+    { kind: "tree", x: 160, y: 980 },
+    { kind: "tree", x: 1420, y: 980 },
+    { kind: "rock", x: 210, y: 430 },
+    { kind: "flower", x: 860, y: 980 },
+  ];
 
   const VISITORS = [
-    { name: "Ania", line: "U ciebie jest tak ładnie." },
-    { name: "Kuba", line: "Ta planeta jest cała twoja? Super." },
-    { name: "Maja", line: "Lubię twój domek." },
-    { name: "Tomek", line: "Przyleciałem, bo tu jest miło." },
+    { name: "Ania", line: "U ciebie jest tak ładnie. Lubię tu chodzić." },
+    { name: "Kuba", line: "Ta planeta jest cała twoja? Super domek." },
+    { name: "Maja", line: "Posadź jeszcze kwiatki koło ścieżki." },
+    { name: "Tomek", line: "Przyszedłem, bo tu jest miło i cicho." },
   ];
 
   function freshSave() {
@@ -93,11 +110,20 @@
   }
 
   function closestSpot(x, y, spots, range) {
-    return spots.find((spot) => nearSpot(x, y, spot, range)) || null;
+    let best = null;
+    let bestD = range * range;
+    spots.forEach((spot) => {
+      const d = dist2(x, y, spot.x, spot.y);
+      if (d <= bestD) {
+        bestD = d;
+        best = spot;
+      }
+    });
+    return best;
   }
 
   function atDoor(x, y, room) {
-    return room === "in" ? nearSpot(x, y, HOUSE_EXIT, 14) : nearSpot(x, y, HOUSE_DOOR, 14);
+    return room === "in" ? nearSpot(x, y, HOUSE_EXIT, 14) : nearSpot(x, y, HOUSE_DOOR, 90);
   }
 
   function tryPlace(x, y, room, held, placed) {
@@ -106,7 +132,8 @@
     if (!item) return { ok: false, reason: "missing", placed };
     const indoor = IN_ITEMS.some((entry) => entry.id === held);
     if (indoor !== (room === "in")) return { ok: false, reason: "wrong-room", placed };
-    const spot = closestSpot(x, y, spotsFor(room), 13);
+    const range = room === "in" ? 13 : 80;
+    const spot = closestSpot(x, y, spotsFor(room), range);
     if (!spot) return { ok: false, reason: "far", placed };
     if (placed[spot.id]) return { ok: false, reason: "taken", placed };
     return {
@@ -126,7 +153,7 @@
   function tryExit(x, y, room) {
     if (room !== "in") return { ok: false, reason: "outside", room };
     if (!atDoor(x, y, "in")) return { ok: false, reason: "far", room };
-    return { ok: true, reason: "", room: "out", x: 68, y: 48 };
+    return { ok: true, reason: "", room: "out", x: 1180, y: 520 };
   }
 
   function nameOk(name) {
@@ -138,12 +165,16 @@
     HAIR_COLORS,
     SKINS,
     SHIRTS,
+    WORLD,
+    START,
     OUT_ITEMS,
     IN_ITEMS,
     OUT_SPOTS,
     IN_SPOTS,
     HOUSE_DOOR,
     HOUSE_EXIT,
+    PLAZA,
+    WILD,
     VISITORS,
     freshSave,
     itemById,

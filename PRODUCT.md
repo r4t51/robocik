@@ -20,7 +20,7 @@ You are a little person. You pick a name and a look. The whole planet is yours. 
 
 ## Positioning
 
-A pocket planet you walk, not an Animal Crossing clone and not a farm tycoon. No Nintendo names, bells, or leaf. The horizon curves because the world is small and yours.
+A pocket-planet village you walk. It can feel like Animal Crossing in the loop (walk, plant, house, talk) but it is not an Animal Crossing copy. No Nintendo names, bells, leaf, or their pictures.
 
 ## Operating Context
 
@@ -45,7 +45,7 @@ Open the page, write a name, pick a look, walk the planet, place things, go into
 
 ## Evidence on Hand
 
-The player asked, in Polish, for a new game: be a little person, choose a name and look, own a whole planet, have a house, and have people visit if everything is made nice. They said it is a bit like Animal Crossing.
+The player asked, in Polish, for a new game: be a little person, choose a name and look, own a whole planet, have a house, and have people visit if everything is made nice. They later asked for it to be the same as Animal Crossing, dot for dot. That Nintendo game cannot be copied. The village walk, planting, house, and talk-box stay original.
 
 ## Product Principles
 
