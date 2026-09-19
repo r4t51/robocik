@@ -4,6 +4,8 @@ const toastEl = document.getElementById("toast");
 const moneyEl = document.getElementById("money");
 const walletEl = document.getElementById("wallet");
 const signEl = document.getElementById("sign");
+const canteen = document.getElementById("canteen");
+const shopBtn = document.getElementById("shop-btn");
 const deck = document.getElementById("deck");
 const stickBase = document.getElementById("stick");
 const stickKnob = document.getElementById("stick-knob");
@@ -97,13 +99,15 @@ function catSvg(look, opts) {
 }
 
 function guestSvg(look) {
-  const skin = ["#f3c7a6", "#e0a07a", "#b56a43"][look.skin % 3];
-  const shirt = ["#2d4a7c", "#d6452a", "#2f6f5e", "#6b3f6e"][look.shirt % 4];
+  const fur = D.FURS[(look && look.fur) % D.FURS.length] || D.FURS[1];
   return `<svg viewBox="0 0 48 48" width="44" height="44" aria-hidden="true">
-    <circle cx="24" cy="16" r="8" fill="${skin}"/>
-    <path d="M14 28 Q24 24 34 28 L36 44 H12Z" fill="${shirt}"/>
-    <circle cx="21" cy="16" r="1.2" fill="#1b1410"/>
-    <circle cx="27" cy="16" r="1.2" fill="#1b1410"/>
+    <ellipse cx="24" cy="32" rx="12" ry="9" fill="${fur}"/>
+    <path d="M12 18 L16 8 L20 20Z" fill="${fur}"/>
+    <path d="M36 18 L32 8 L28 20Z" fill="${fur}"/>
+    <circle cx="24" cy="20" r="8" fill="${fur}"/>
+    <circle cx="21" cy="20" r="1.2" fill="#1b1410"/>
+    <circle cx="27" cy="20" r="1.2" fill="#1b1410"/>
+    <path d="M24 22 L22 24 L26 24Z" fill="#e07a9a"/>
   </svg>`;
 }
 
@@ -127,10 +131,12 @@ function trashSvg() {
 }
 
 function randomGuestLook() {
-  return {
-    skin: Math.floor(Math.random() * 3),
-    shirt: Math.floor(Math.random() * 4),
-  };
+  return { fur: Math.floor(Math.random() * D.FURS.length) };
+}
+
+function setChrome(mode) {
+  canteen.classList.toggle("is-play", mode === "play");
+  shopBtn.hidden = mode !== "play";
 }
 
 function spawnCustomer() {
@@ -162,6 +168,7 @@ function moveVector() {
 
 function createScreen() {
   game.mode = "create";
+  setChrome("create");
   deck.hidden = true;
   const look = game.save.look;
   stage.innerHTML = `
@@ -188,6 +195,7 @@ function createScreen() {
 
 function playScreen() {
   game.mode = "play";
+  setChrome("play");
   deck.hidden = false;
   if (game.tables.length !== D.tableCount(game.save.owned)) {
     const old = game.tables;
@@ -197,16 +205,14 @@ function playScreen() {
     });
   }
   stage.innerHTML = `
-    <div class="sheet play">
-      <p class="how">Weź pizzę z pieca. Zanieś na stolik. Klient je. Śmieci zostają.</p>
+    <div class="arena">
       <div class="room is-cat" id="room">
-        <div class="oven" style="left:${D.OVEN.x}%;top:${D.OVEN.y}%">${pizzaSvg()}<span>Pizza z grzybami</span></div>
+        <div class="oven" style="left:${D.OVEN.x}%;top:${D.OVEN.y}%">${pizzaSvg()}<span>Piec</span></div>
         ${game.tables
           .map((table) => `<div class="table" data-table="${table.id}" style="left:${table.x}%;top:${table.y}%"></div>`)
           .join("")}
-        <div class="you" id="you">${catSvg(game.save.look, { size: 76 })}<span id="carry" class="carry" hidden></span></div>
+        <div class="you" id="you">${catSvg(game.save.look, { size: 88 })}<span id="carry" class="carry" hidden></span></div>
       </div>
-      <button type="button" class="go slim" data-act="upgrades">Ulepsz pizzerię</button>
     </div>
   `;
   paintRoom();
@@ -255,6 +261,7 @@ function paintRoom() {
 function upgradeScreen() {
   toastEl.hidden = true;
   game.mode = "upgrade";
+  setChrome("upgrade");
   deck.hidden = true;
   stage.innerHTML = `
     <div class="sheet shop">
@@ -289,7 +296,7 @@ function openBar() {
   game.eatIn = 0;
   persist();
   playScreen();
-  showToast("Jesteś kotkiem. Tylko pizza z grzybami.");
+  showToast("Weź pizzę z pieca i zanieś na stolik.");
 }
 
 function doPickup() {
@@ -441,7 +448,7 @@ stage.addEventListener("click", (event) => {
     openBar();
     return;
   }
-  if (btn.dataset.act === "upgrades") {
+    if (btn.dataset.act === "upgrades") {
     upgradeScreen();
     return;
   }
@@ -459,6 +466,10 @@ stage.addEventListener("click", (event) => {
     persist();
     createScreen();
   }
+});
+
+shopBtn.addEventListener("click", () => {
+  if (game.mode === "play") upgradeScreen();
 });
 
 actBtn.addEventListener("pointerdown", (event) => {
@@ -482,14 +493,14 @@ window.addEventListener("keyup", (event) => {
 
 bindStick(stickBase);
 game.save = loadSave();
-if (new URLSearchParams(location.search).has("play")) {
-  openBar();
+if (new URLSearchParams(location.search).has("look")) {
+  createScreen();
 } else if (new URLSearchParams(location.search).has("shop")) {
   openBar();
   game.save.money = Math.max(game.save.money, 80);
   upgradeScreen();
 } else {
-  createScreen();
+  openBar();
 }
 renderMoney();
 requestAnimationFrame(frame);

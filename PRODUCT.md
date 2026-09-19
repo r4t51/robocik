@@ -24,11 +24,11 @@ A messy pizza parlor run by a cat that only delivers pizza. Tables fill with lef
 
 ## Operating Context
 
-Open the page, set a cat look, tap Biegam z pizzą, walk, drop pizza on a table, upgrade. Progress sits in localStorage (`kot-pizza-save`) on that device. No account.
+Open the page and you are already the kitten in the pizzeria, like Cat Pizza / Pizza Cat. Walk, drop pizza on a table, upgrade. Look picker is optional (`?look=1`). Progress sits in localStorage (`kot-pizza-save`) on that device. No account.
 
 ## Capabilities and Constraints
 
-- Character creator: fur color, marks (plain / patches / stripes), extra (none / bow / bell).
+- First screen is the walking room. Optional look picker: fur, marks, extra.
 - You walk. The oven is the only pickup. The only food is mushroom pizza (`Pizza z grzybami`).
 - There are tables. Walk a pizza to a seated guest and it places itself. After a short eat, they pay and leave trash.
 - Trash is not a job. `tryTakeTrash` always fails. Tapping leftover plates says they stay.
@@ -47,10 +47,10 @@ Open the page, set a cat look, tap Biegam z pizzą, walk, drop pizza on a table,
 
 ## Evidence on Hand
 
-The player asked, in Polish, to stop being a little human, be a kitten, have tables, sell only mushroom pizza (“kij grzyb pizza”), and not take away trash.
+The player asked, in Polish, to stop being a little human, be a kitten, have tables, sell only mushroom pizza (“kij grzyb pizza”), and not take away trash. They then said to make it the same as Pizza Cat: open the link and walk the cat in the restaurant at once.
 
 ## Product Principles
 
-- One loop: look → walk pizza to a table → guest eats → trash stays → upgrade.
+- One loop: walk pizza to a table → guest eats → trash stays → upgrade.
 - Big tap targets. A nearby oven or table is obvious.
 - Late guests leave with no pay. Wrong jobs (trash) do nothing.

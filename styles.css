@@ -71,9 +71,24 @@ body {
 
 .beam {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto auto;
   align-items: center;
   gap: 0.5rem;
+}
+
+.mini {
+  min-height: 2.4rem;
+  padding: 0.2rem 0.7rem;
+  border: 0;
+  background: var(--ketchup);
+  color: var(--milk);
+  font-family: "Archivo Black", "Trebuchet MS", sans-serif;
+  font-size: 0.95rem;
+  box-shadow: 0 6px 12px rgba(142, 27, 20, 0.28);
+}
+
+.mini[hidden] {
+  display: none;
 }
 
 .sign {
@@ -232,6 +247,10 @@ body {
   gap: 0.45rem;
 }
 
+.arena {
+  height: 100%;
+}
+
 .how {
   margin: 0;
   font-weight: 700;
@@ -244,6 +263,33 @@ body {
   background:
     linear-gradient(var(--cinder) 0 28%, var(--lino) 28%);
   border: 5px solid var(--cinder-deep);
+}
+
+.canteen.is-play {
+  min-height: 100dvh;
+  align-items: stretch;
+  padding: max(0.4rem, env(safe-area-inset-top)) 0.45rem
+    max(0.35rem, env(safe-area-inset-bottom));
+}
+
+.canteen.is-play .hall {
+  width: 100%;
+  height: calc(100dvh - 0.8rem);
+  grid-template-rows: auto 1fr auto;
+  gap: 0.35rem;
+}
+
+.canteen.is-play .stage {
+  min-height: 0;
+}
+
+.canteen.is-play .arena,
+.canteen.is-play .room {
+  height: 100%;
+}
+
+.canteen.is-play .toast {
+  top: 4.2rem;
 }
 
 .room::before {
